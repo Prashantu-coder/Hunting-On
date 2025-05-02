@@ -18,7 +18,7 @@ else:
 
 # 🔧 Google Sheet setup
 SHEET_ID = "1_pmG2oMSEk8VciNm2uqcshyvPPZBbjf-oKV59chgT1w"  # Replace with your Google Sheet ID
-json_keyfile = 'C:\Users\Dell\Downloads\quantexo-458612-3f15459a6740.json'  # Replace with the path to your downloaded JSON key file
+json_keyfile = 'C:/Users/Dell/Downloads/quantexo-458612-3f15459a6740.json'  # Use forward slashes
 
 # 📋 UI
 st.set_page_config(page_title="Quantexo", layout="wide")
