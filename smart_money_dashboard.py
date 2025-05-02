@@ -3,8 +3,6 @@ import streamlit as st
 import plotly.graph_objects as go
 import io
 from datetime import timedelta
-import gspread
-import json
 
 # --- Page Setup ---
 st.set_page_config(page_title="Quantexo Trading Signals", layout="wide")
@@ -15,15 +13,13 @@ company_symbol = st.text_input("🔍 Search Company Symbol", "").strip().upper()
 
 if company_symbol:
     @st.cache_data(ttl=3600)
-    def get_sheet_data(symbol):
+    def get_sheet_data(symbol, sheet_name="Daily Price"):
         try:
-            gc = gspread.service_account_from_dict(st.secrets["gcp_service_account"])
-
-            # Replace 'Sheet1' with your sheet name
-            sheet_url = "https://docs.google.com/spreadsheets/d/1_pmG2oMSEk8VciNm2uqcshyvPPZBbjf-oKV59chgT1w/edit?gid=0#gid=0"  # Replace with your sheet URL
-            sheet = gc.open_by_url(sheet_url).worksheet("Daily Price")  # Change "Sheet1" to your actual sheet name
-            data = sheet.get_all_records(value_render_option='UNFORMATTED_VALUE')
-            df = pd.DataFrame(data)
+            # Google Sheets URL with the specific sheet's gid
+            sheet_url = f"https://docs.google.com/spreadsheets/d/1_pmG2oMSEk8VciNm2uqcshyvPPZBbjf-oKV59chgT1w/export?format=csv&gid={get_sheet_gid(sheet_name)}"
+            
+            # Read data as CSV directly (no auth needed if public)
+            df = pd.read_csv(sheet_url)
 
             # Define the columns based on the new column mappings
             df.columns = ['date', 'symbol', 'open', 'high', 'low', 'close', 'volume']
@@ -34,7 +30,18 @@ if company_symbol:
             st.error(f"🔴 Error fetching data: {str(e)}")
             return pd.DataFrame()
 
-    df = get_sheet_data(company_symbol)
+    def get_sheet_gid(sheet_name):
+        # You need to know the gid value of the sheet, or you can find it in the sheet's URL when editing the sheet
+        sheet_gids = {
+            "Sheet1": 0,  # Default sheet (GID of Sheet1)
+            "Sheet2": 123456789,  # Example GID for Sheet2
+            # Add more sheets here with their respective GIDs
+        }
+        return sheet_gids.get(sheet_name, 0)  # Default to GID 0 if sheet_name not found
+
+    sheet_name = st.selectbox("Select the sheet you want to load", ["Sheet1", "Sheet2"])  # Add more options for other sheets
+
+    df = get_sheet_data(company_symbol, sheet_name)
 
     if df.empty:
         st.warning(f"No data found for {company_symbol}")
@@ -248,5 +255,6 @@ if company_symbol:
 
     except Exception as e:
         st.error(f"⚠️ Processing error: {str(e)}")
+
 else:
     st.info("ℹ️ Enter a company symbol to begin analysis")
