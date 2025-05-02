@@ -1,0 +1,45 @@
+# --- Streamlit ---
+# Exclude secrets and local Streamlit configs
+.streamlit/secrets.toml
+.streamlit/config.toml
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# --- Jupyter Notebooks ---
+.ipynb_checkpoints/
+
+# --- Virtual Environment ---
+venv/
+env/
+ENV/
+.venv/
+.pipenv/
+.pdm/
+
+# --- VS Code ---
+.vscode/
+
+# --- System files ---
+.DS_Store
+Thumbs.db
+
+# --- Logs and dumps ---
+*.log
+*.out
+*.bak
+*.tmp
+
+# --- Credentials (general) ---
+*.pem
+*.key
+*.crt
+*.p12
+credentials.json
+token.json
