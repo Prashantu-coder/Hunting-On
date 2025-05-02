@@ -19,20 +19,32 @@ try:
     private_key = st.secrets["gcp_service_account"]["private_key"]
     st.write(f"Private key length: {len(private_key)}")  # This will print the length of the private key
 
-    # Create a temporary file to store the private key
-    with tempfile.NamedTemporaryFile(delete=False) as temp_key_file:
-        temp_key_file.write(private_key.encode())  # Write private key to temporary file
-        temp_key_path = temp_key_file.name  # Get the path to the temporary file
-    st.write(f"Temporary key file created at: {temp_key_path}")  # Debugging path
+    # Create a temporary JSON file with proper structure
+    credentials_json = {
+        "type": "service_account",
+        "project_id": st.secrets["gcp_service_account"]["project_id"],
+        "private_key_id": st.secrets["gcp_service_account"]["private_key_id"],
+        "private_key": private_key,
+        "client_email": st.secrets["gcp_service_account"]["client_email"],
+        "client_id": st.secrets["gcp_service_account"]["client_id"],
+        "auth_uri": st.secrets["gcp_service_account"]["auth_uri"],
+        "token_uri": st.secrets["gcp_service_account"]["token_uri"],
+        "auth_provider_x509_cert_url": st.secrets["gcp_service_account"]["auth_provider_x509_cert_url"],
+        "client_x509_cert_url": st.secrets["gcp_service_account"]["client_x509_cert_url"]
+    }
 
-     # Read the temporary key file and print its contents for debugging
-    with open(temp_key_path, 'r') as file:
-        key_content = file.read()
-    st.write(f"Temporary key file content preview: {key_content[:100]}...")  # Display a preview of the first 100 characters
-    # Use the private key file for authentication
+    # Write the JSON structure to a temporary file
+    with tempfile.NamedTemporaryFile(delete=False, mode='w', encoding='utf-8') as temp_json_file:
+        json.dump(credentials_json, temp_json_file)
+        temp_json_path = temp_json_file.name  # Get the path to the temporary JSON file
+
+    # Debugging: Print the temporary JSON file path
+    st.write(f"Temporary JSON key file created at: {temp_json_path}")
+
+    # Use the temporary JSON file for authentication
     credentials = service_account.Credentials.from_service_account_file(
-        temp_key_path,
-        scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]  # or the appropriate scope
+        temp_json_path,
+        scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
     )
 
     # Authorize with Google Sheets
@@ -42,6 +54,9 @@ try:
 
     # Clean up the temporary file after use
     os.remove(temp_key_path)
+
+
+
 
 except Exception as e:
     st.error(f"🔴 Failed to authenticate: {str(e)}")
