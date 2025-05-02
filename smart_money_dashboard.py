@@ -4,23 +4,10 @@ import plotly.graph_objects as go
 import io
 from datetime import timedelta
 import gspread
-from google.oauth2 import service_account
 
 # --- Page Setup ---
 st.set_page_config(page_title="Quantexo Trading Signals", layout="wide")
 st.title("📈 Advanced Smart Money Signals")
-
-# --- Load Google Sheets Credentials ---
-try:
-    creds = service_account.Credentials.from_service_account_info(
-        st.secrets["gcp_service_account"],
-        scopes=["https://www.googleapis.com/auth/spreadsheets"]
-    )
-    gc = gspread.authorize(creds)
-    sheet_url = st.secrets["private_gsheets_url"]
-except Exception as e:
-    st.error(f"🔴 Failed to authenticate: {str(e)}")
-    st.stop()
 
 # --- Company Search ---
 company_symbol = st.text_input("🔍 Search Company Symbol", "").strip().upper()
@@ -29,25 +16,17 @@ if company_symbol:
     @st.cache_data(ttl=3600)
     def get_sheet_data(symbol):
         try:
-            sheet = gc.open_by_url(sheet_url).worksheet("OHLCV")
+            # Replace 'Sheet1' with your sheet name
+            gc = gspread.service_account(filename='your-service-account.json')  # Or use anonymous access if no authentication is required
+            sheet_url = "https://docs.google.com/spreadsheets/d/1_pmG2oMSEk8VciNm2uqcshyvPPZBbjf-oKV59chgT1w/edit?gid=0#gid=0"  # Replace with your sheet URL
+            sheet = gc.open_by_url(sheet_url).worksheet("Daily Price")  # Change "Sheet1" to your actual sheet name
             data = sheet.get_all_records(value_render_option='UNFORMATTED_VALUE')
             df = pd.DataFrame(data)
 
-            col_mapping = {
-                'date': ['date', 'Date', 'DATE'],
-                'symbol': ['symbol', 'Symbol', 'SYMBOL', 'Ticker'],
-                'open': ['open', 'Open', 'OPEN'],
-                'high': ['high', 'High', 'HIGH'],
-                'low': ['low', 'Low', 'LOW'],
-                'close': ['close', 'Close', 'CLOSE'],
-                'volume': ['volume', 'Volume', 'VOLUME']
-            }
+            # Define the columns based on the new column mappings
+            df.columns = ['date', 'symbol', 'open', 'high', 'low', 'close', 'volume']
 
-            for standard_name, variants in col_mapping.items():
-                for variant in variants:
-                    if variant in df.columns:
-                        df.rename(columns={variant: standard_name}, inplace=True)
-
+            # Filter data based on company symbol
             return df[df['symbol'].str.upper() == symbol.upper()]
         except Exception as e:
             st.error(f"🔴 Error fetching data: {str(e)}")
