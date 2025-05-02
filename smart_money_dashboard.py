@@ -195,4 +195,74 @@ if company_symbol:
             fig = go.Figure()
             fig.add_trace(go.Scatter(
                 x=df['date'], y=df['close'],
-                mode='lines
+                mode='lines', name='Close Price',
+            line=dict(color='lightblue', width=2),
+            hovertext=df['close'],
+            hoverinfo="x+y+text"
+        ))
+
+        # Tag descriptions
+        tag_labels = {
+            '🟢': '🟢 Aggressive Buyers',
+            '🔴': '🔴 Aggressive Sellers',
+            '⛔': '⛔ Buyer Absorption',
+            '🚀': '🚀 Seller Absorption',
+            '💥': '💥 Bullish POR',
+            '💣': '💣 Bearish POR',
+            '🐂': '🐂 Bullish POI',
+            '🐻': '🐻 Bearish POI',
+            '📉': '📉 Bullish Weak Legs',
+            '📈': '📈 Bearish Weak Legs',
+            '⚠️ D': '⚠️ Fake Drop',
+            '⚠️ R': '⚠️ Fake Rise',
+            'Buyer Absorption':'Buyer Absorption',
+            'Seller Absorption' : 'Seller Absorption'
+        }
+
+        for tag in selected_tags:
+    subset = df[df['tag'] == tag]
+    fig.add_trace(go.Scatter(
+        x=subset['date'], y=subset['close'],
+        mode='markers+text',
+        name=tag_labels.get(tag, tag),
+        text=[tag] * len(subset),
+        textposition='top center',
+        textfont=dict(size=20),
+        marker=dict(size=14, symbol="circle", color='white'),
+        customdata=subset[['open', 'high', 'low', 'close', 'point_change']].values,
+        hovertemplate=(
+            "📅 Date: %{x|%Y-%m-%d}<br>" +
+            "🟢 Open: %{customdata[0]:.2f}<br>" +
+            "📈 High: %{customdata[1]:.2f}<br>" +
+            "📉 Low: %{customdata[2]:.2f}<br>" +
+            "🔚 Close: %{customdata[3]:.2f}<br>" +
+            "📊 Point Change: %{customdata[4]:.2f}<br>" +
+            f"{tag_labels.get(tag, tag)}<extra></extra>"
+        )
+    ))
+
+# --- Layout customization ---
+fig.update_layout(
+    height=800,
+    plot_bgcolor="black",
+    paper_bgcolor="black",
+    font_color="white",
+    legend=dict(font=dict(size=14)),
+    title="Smart Money Signals Chart",
+    xaxis=dict(
+        title="Date",
+        tickangle=-45,
+        showgrid=False
+    ),
+    yaxis=dict(
+        title="Price",
+        showgrid=True,
+        gridcolor="gray",
+        zeroline=True,
+        zerolinecolor="gray",
+    ),
+    margin=dict(l=50, r=50, b=150, t=50),
+)
+
+# --- Plot the figure ---
+st.plotly_chart(fig, use_container_width=True)
