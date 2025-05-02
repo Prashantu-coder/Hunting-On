@@ -18,12 +18,20 @@ signal_tags = {
 
 # File loader
 def load_csv(file):
-    df = pd.read_csv(file, parse_dates=['time'])
+    df = pd.read_csv(file, parse_dates=['Date'])
+    df.rename(columns={
+        'Date': 'time',
+        'Open': 'open',
+        'High': 'high',
+        'Low': 'low',
+        'Close': 'close',
+        'Volume': 'volume'
+    }, inplace=True)
     df.set_index('time', inplace=True)
     df['range'] = df['high'] - df['low']
     return df
 
-# Signal Detection Logic (same as before)
+# Signal Detection Logic
 def detect_bullish_weak_leg(df):
     return (
         (df['low'] > df['low'].shift(1)) &
