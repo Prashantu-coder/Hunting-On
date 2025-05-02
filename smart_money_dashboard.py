@@ -6,6 +6,15 @@ import gspread
 import urllib.parse
 import io
 from datetime import timedelta
+import os
+
+# Check if the file exists
+json_keyfile = '/path/to/your/service_account_file.json'  # Update this with the correct path
+
+if os.path.exists(json_keyfile):
+    print("JSON key file found.")
+else:
+    print(f"JSON key file not found at {json_keyfile}")
 
 # 🔧 Google Sheet setup
 SHEET_ID = "1_pmG2oMSEk8VciNm2uqcshyvPPZBbjf-oKV59chgT1w"  # Replace with your Google Sheet ID
