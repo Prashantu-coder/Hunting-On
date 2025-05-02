@@ -1,70 +1,61 @@
-import gspread
-from google.oauth2.service_account import Credentials
 import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
+import urllib.parse
 import io
 from datetime import timedelta
 
 # --- Page setup ---
 st.set_page_config(page_title="Quantexo", layout="wide")
-st.title("Advanced Insights for Bold Trades")
+st.title("📊 Smart Money Stock Dashboard")
 
-# --- Google Sheets Authentication ---
-# Provide your credentials.json path here
-json_keyfile = "path/to/your/credentials.json"
+# 🔧 Your shared Google Sheet ID
+SHEET_ID = "your_actual_google_sheet_id"  # Replace with your actual Google Sheet ID
 
-# Define the scope for accessing the Google Sheets API
-scope = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+# 📋 Search for company input
+company = st.text_input("Search Company", placeholder="e.g., UpperTamakoshi")
 
-# Create a credential object from the JSON file
-creds = Credentials.from_service_account_file(json_keyfile, scopes=scope)
+if company:
+    # 📋 Sanitize the company name to match the sheet name
+    sheet_name = company.strip().replace(" ", "")
+    
+    # 📥 Build GSheet CSV URL for specific sheet/tab
+    gsheet_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={urllib.parse.quote(sheet_name)}"
 
-# Authenticate and access the Google Sheets API
-gc = gspread.authorize(creds)
-
-# --- Input Google Sheets Info ---
-sheet_id = st.text_input("1_pmG2oMSEk8VciNm2uqcshyvPPZBbjf-oKV59chgT1w")
-sheet_name = st.text_input("Daily Price")
-
-if sheet_id and sheet_name:
     try:
-        # Access the Google Sheet and the specific worksheet
-        worksheet = gc.open_by_key(sheet_id).worksheet(sheet_name)
+        # 📥 Load the data from Google Sheets
+        df = pd.read_csv(gsheet_url)
+        
+        # Make sure 'Date', 'Close', and 'Volume' columns exist
+        if not all(col in df.columns for col in ['Date', 'Close', 'Volume']):
+            st.error(f"Missing required columns in '{company}' sheet. Ensure 'Date', 'Close', and 'Volume' columns are present.")
+        else:
+            df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+            df = df.sort_values('Date')
 
-        # Fetch all data from the sheet
-        data = worksheet.get_all_records()
-
-        # Convert the data into a pandas DataFrame
-        df = pd.DataFrame(data)
-
-        # Check if the necessary columns are present
-        required_cols = {'date', 'open', 'high', 'low', 'close', 'volume'}
-        if required_cols.issubset(set(df.columns)):
-            df['date'] = pd.to_datetime(df['date'])
-            df.sort_values('date', inplace=True)
-            df.reset_index(drop=True, inplace=True)
+            # Clean volume column and handle non-numeric values gracefully
+            df['Volume'] = pd.to_numeric(df['Volume'], errors='coerce')
 
             # ➕ Calculate point change
-            df['point_change'] = df['close'].diff().fillna(0)
+            df['point_change'] = df['Close'].diff().fillna(0)
 
             # --- Signal Tagging ---
             df['tag'] = ''
-            avg_volume = df['volume'].rolling(window=10).mean()
+            avg_volume = df['Volume'].rolling(window=10).mean()
 
             for i in range(3, len(df) - 6):  # ensure room for lookahead
                 row = df.iloc[i]
                 prev = df.iloc[i - 1]
                 next_candles = df.iloc[i + 1:i + 6]  # next 5 candles
-                body = abs(row['close'] - row['open'])
-                prev_body = abs(prev['close'] - prev['open'])
+                body = abs(row['Close'] - row['Open'])
+                prev_body = abs(prev['Close'] - prev['Open'])
                 recent_tags = df['tag'].iloc[max(0, i-4):i]
 
                 # 🟢 Aggressive Buyers
                 if (
-                    row['close'] > row['open']
-                    and row['close'] >= row['high'] - (row['high'] - row['low']) * 0.1
-                    and row['volume'] > avg_volume[i]
+                    row['Close'] > row['Open']
+                    and row['Close'] >= row['High'] - (row['High'] - row['Low']) * 0.1
+                    and row['Volume'] > avg_volume[i]
                     and body > prev_body
                     and '🟢' not in recent_tags.values
                 ):
@@ -72,9 +63,9 @@ if sheet_id and sheet_name:
 
                 # 🔴 Aggressive Sellers
                 elif (
-                    row['open'] > row['close']
-                    and row['close'] <= row['low'] + (row['high'] - row['low']) * 0.1
-                    and row['volume'] > avg_volume[i] 
+                    row['Open'] > row['Close']
+                    and row['Close'] <= row['Low'] + (row['High'] - row['Low']) * 0.1
+                    and row['Volume'] > avg_volume[i] 
                     and body > prev_body
                     and '🔴' not in recent_tags.values
                 ):
@@ -82,27 +73,28 @@ if sheet_id and sheet_name:
 
                 # ⛔ Buyer Absorption
                 elif (
-                    row['close'] > row['open']
-                    and body > (row['high'] - row['low']) * 0.6
-                    and row['volume'] > avg_volume[i] * 1.2
+                    row['Close'] > row['Open']
+                    and body > (row['High'] - row['Low']) * 0.6
+                    and row['Volume'] > avg_volume[i] * 1.2
                 ):
-                    if all(candle['close'] < row['open'] for _, candle in next_candles.iterrows()):
+                    if all(candle['Close'] < row['Open'] for _, candle in next_candles.iterrows()):
                         df.at[i, 'tag'] = '⛔'
 
                 # 🚀 Seller Absorption
                 elif (
-                    row['open'] > row['close']
-                    and body > (row['high'] - row['low']) * 0.6
-                    and row['volume'] > avg_volume[i] * 1.2
-                    and all(candle['close'] > row['open'] for _, candle in next_candles.iterrows())
+                    row['Open'] > row['Close']
+                    and body > (row['High'] - row['Low']) * 0.6
+                    and row['Volume'] > avg_volume[i] * 1.2
+                    and all(candle['Close'] > row['Open'] for _, candle in next_candles.iterrows())
                 ):
                         df.at[i, 'tag'] = '🚀'
+
 
                 # 💥 Bullish POR
                 elif (
                     i >= 10 and
-                    row['high'] > max(df['high'].iloc[i - 10:i])
-                    and row['volume'] > avg_volume[i] * 1.8
+                    row['High'] > max(df['High'].iloc[i - 10:i])
+                    and row['Volume'] > avg_volume[i] * 1.8
                 ):
                     if not (df['tag'].iloc[i - 3:i] == '💥').any():
                         df.at[i, 'tag'] = '💥'
@@ -110,65 +102,66 @@ if sheet_id and sheet_name:
                 # 💣 Bearish POR
                 elif (
                     i >= 10 and
-                    row['low'] < min(df['low'].iloc[i - 10:i])
-                    and row['volume'] > avg_volume[i] * 1.8
+                    row['Low'] < min(df['Low'].iloc[i - 10:i])
+                    and row['Volume'] > avg_volume[i] * 1.8
                 ):
                     if not (df['tag'].iloc[i - 3:i] == '💣').any():
                         df.at[i, 'tag'] = '💣'
 
                 # 🐂 Bullish POI
                 elif (
-                    row['close'] > row['open']
-                    and body > (row['high'] - row['low']) * 0.7
-                    and row['volume'] > avg_volume[i] * 2
+                    row['Close'] > row['Open']
+                    and body > (row['High'] - row['Low']) * 0.7
+                    and row['Volume'] > avg_volume[i] * 2
                 ):
                     df.at[i, 'tag'] = '🐂'
 
                 # 🐻 Bearish POI
                 elif (
-                    row['open'] > row['close']
-                    and body > (row['high'] - row['low']) * 0.7
-                    and row['volume'] > avg_volume[i] * 2
+                    row['Open'] > row['Close']
+                    and body > (row['High'] - row['Low']) * 0.7
+                    and row['Volume'] > avg_volume[i] * 2
                 ):
                     df.at[i, 'tag'] = '🐻'
 
                 # 📉 Bullish Weak Legs (updated)
                 elif (
                     df['point_change'].iloc[i] > 0
-                    and row['close'] > row['open']
+                    and row['Close'] > row['Open']
                     and body < 0.3 * prev_body
-                    and row['volume'] < avg_volume[i] * 1.1
+                    and row['Volume'] < avg_volume[i] * 1.1
                 ):
                     df.at[i, 'tag'] = '📉'
 
                 # 📈 Bearish Weak Legs (updated)
                 elif (
                     df['point_change'].iloc[i] < 0
-                    and row['open'] > row['close']
+                    and row['Open'] > row['Close']
                     and body < 0.3 * prev_body
-                    and row['volume'] < avg_volume[i] * 1.1
+                    and row['Volume'] < avg_volume[i] * 1.1
                 ):
                     df.at[i, 'tag'] = '📈'
                 
                 # ⚠️ Fake Drop - Large bearish candle but weak volume
                 elif ( 
-                    row['open'] > row['close']
+                    row['Open'] > row['Close']
                     and body >= 0.3 * prev_body
-                    and row['volume'] < avg_volume[i] * 1.1
-                    and prev['close'] > prev['open']
+                    and row['Volume'] < avg_volume[i] * 1.1
+                    and prev['Close'] > prev['Open']
                     and '⚠️ D' not in recent_tags.values
                 ):
                     df.at[i, 'tag'] = '⚠️ D'
 
                 # ⚠️ Fake Rise - Large bullish candle but weak volume
                 elif (
-                    row['close'] > row['open']
+                    row['Close'] > row['Open']
                     and body >= 0.3 * prev_body
-                    and row['volume'] < avg_volume[i] *1.1
-                    and prev['open'] > prev['close']
+                    and row['Volume'] < avg_volume[i] *1.1
+                    and prev['Open'] > prev['Close']
                     and '⚠️ R' not in recent_tags.values
                 ):
                     df.at[i, 'tag'] = '⚠️ R'
+
 
             # --- Filter tags ---
             tags_available = [tag for tag in df['tag'].unique() if tag]
@@ -178,10 +171,10 @@ if sheet_id and sheet_name:
             fig = go.Figure()
 
             fig.add_trace(go.Scatter(
-                x=df['date'], y=df['close'],
+                x=df['Date'], y=df['Close'],
                 mode='lines', name='Close Price',
                 line=dict(color='lightblue', width=2),
-                hovertext=df['close'],
+                hovertext=df['Close'],
                 hoverinfo="x+y+text"
             ))
 
@@ -206,21 +199,21 @@ if sheet_id and sheet_name:
             for tag in selected_tags:
                 subset = df[df['tag'] == tag]
                 fig.add_trace(go.Scatter(
-                    x=subset['date'], y=subset['close'],
+                    x=subset['Date'], y=subset['Close'],
                     mode='markers+text',
                     name=tag_labels.get(tag, tag),
                     text=[tag] * len(subset),
                     textposition='top center',
                     textfont=dict(size=20),
                     marker=dict(size=14, symbol="circle", color='white'),
-                    customdata=subset[['open', 'high', 'low', 'close', 'point_change']].values,
-                    hovertemplate=( 
-                        "📅 Date: %{x|%Y-%m-%d}<br>" + 
-                        "🟢 Open: %{customdata[0]:.2f}<br>" + 
-                        "📈 High: %{customdata[1]:.2f}<br>" + 
-                        "📉 Low: %{customdata[2]:.2f}<br>" + 
-                        "🔚 Close: %{customdata[3]:.2f}<br>" + 
-                        "📊 Point Change: %{customdata[4]:.2f}<br>" + 
+                    customdata=subset[['Open', 'High', 'Low', 'Close', 'point_change']].values,
+                    hovertemplate=(
+                        "📅 Date: %{x|%Y-%m-%d}<br>" +
+                        "🟢 Open: %{customdata[0]:.2f}<br>" +
+                        "📈 High: %{customdata[1]:.2f}<br>" +
+                        "📉 Low: %{customdata[2]:.2f}<br>" +
+                        "🔚 Close: %{customdata[3]:.2f}<br>" +
+                        "📊 Point Change: %{customdata[4]:.2f}<br>" +
                         f"{tag_labels.get(tag, tag)}<extra></extra>"
                     )
                 ))
@@ -251,23 +244,11 @@ if sheet_id and sheet_name:
 
             # --- Table for last 1 month signals ---
             st.subheader("📋 Recent 1 Month Signal Observed")
-            last_date = df['date'].max()
-            one_month_ago = last_date - timedelta(days=30)
-            recent_df = df[(df['date'] >= one_month_ago) & (df['tag'] != '')]
+            last_date = df['Date'].max()
+            one_month_ago = last_date - timedelta(days=60)
+            recent_df = df[(df['Date'] >= one_month_ago) & (df['tag'] != '')]
 
-            st.dataframe(recent_df[['date', 'open', 'high', 'low', 'close', 'point_change', 'volume', 'tag']].sort_values('date', ascending=False))
+            st.dataframe(recent_df[['Date', 'Open', 'High', 'Low', 'Close', 'point_change', 'tag']])
 
-            # --- Download Excel ---
-            output = io.BytesIO()
-            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                recent_df[['date', 'open', 'high', 'low', 'close', 'point_change', 'volume', 'tag']].to_excel(writer, index=False, sheet_name='Signals')
-            processed_data = output.getvalue()
-
-            st.download_button(
-                label="📥 Download 1 Month Signals as Excel",
-                data=processed_data,
-                file_name='recent_1_month_signals.xlsx',
-                mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            )
     except Exception as e:
-        st.error(f"Error accessing sheet: {e}")
+        st.error(f"Failed to load data for '{company}'. Error: {e}")
