@@ -12,8 +12,6 @@ st.title("📈 Advanced Smart Money Signals")
 
 # --- Load Google Sheets Credentials ---
 try:
-    
-    st.write("🔍 gcp_service_account type:", type(st.secrets["gcp_service_account"]))
     creds = service_account.Credentials.from_service_account_info(
         st.secrets["gcp_service_account"],
         scopes=["https://www.googleapis.com/auth/spreadsheets"]
