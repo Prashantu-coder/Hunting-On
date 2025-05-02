@@ -1,278 +1,244 @@
 import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+import io
 from datetime import timedelta
-import streamlit as st
 from google.oauth2 import service_account
+from gsheetsdb import connect
 
-# Load credentials from Streamlit secrets
+# --- Page Setup ---
+st.set_page_config(page_title="Quantexo Trading Signals", layout="wide")
+st.title("📈 Advanced Smart Money Signals")
+
+# --- Load Google Sheets Credentials ---
 credentials = service_account.Credentials.from_service_account_info(
     st.secrets["gcp_service_account"],
     scopes=["https://www.googleapis.com/auth/spreadsheets"],
 )
+conn = connect(credentials=credentials)
 
-private_gsheets_url = st.secrets["private_gsheets_url"]
-
-# --- Google Sheets authentication ---
-def authenticate_google_sheets():
-    # Define the scope and path to your credentials file
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    
-    # Authenticate using the credentials file
-    creds = ServiceAccountCredentials.from_json_keyfile_name('D:\\New folder (2)\\quantexo-458612-3f15459a6740.json', scope) # Replace 'credentials.json' with your credentials file path
-    client = gspread.authorize(creds)
-    return client
-
-# --- Extract data from Google Sheets ---
-def get_data_from_sheet(client, sheet_id, sheet_name, symbol):
-    # Open the Google Sheet and extract the data
-    sheet = client.open_by_key(sheet_id).worksheet(sheet_name)
-    data = sheet.get_all_records()
-
-    # Convert data into a DataFrame
-    df = pd.DataFrame(data)
-
-    # Convert all relevant columns to numeric, coerce errors to NaN
-    df['date'] = pd.to_datetime(df['date'], errors='coerce')
-    df['open'] = pd.to_numeric(df['open'], errors='coerce')
-    df['high'] = pd.to_numeric(df['high'], errors='coerce')
-    df['low'] = pd.to_numeric(df['low'], errors='coerce')
-    df['close'] = pd.to_numeric(df['close'], errors='coerce')
-    df['volume'] = pd.to_numeric(df['volume'], errors='coerce')
-
-    # Filter by company symbol
-    df = df[df['company_symbol'].str.contains(symbol, case=False, na=False)]
-    
-    return df
-
-# --- Page setup ---
-st.set_page_config(page_title="Quantexo", layout="wide")
-st.title("Advanced Insights for Bold Trades")
-
-# --- Google Sheets Input ---
-sheet_id = "1_pmG2oMSEk8VciNm2uqcshyvPPZBbjf-oKV59chgT1w"  # Replace with your actual sheet ID
-sheet_name = "Daily Price"  # Replace with your actual sheet name
-
-# Authenticate with Google Sheets
-client = authenticate_google_sheets()
-
-# --- Search for company symbol ---
-company_symbol = st.text_input("Enter Company Symbol", "")
-
-print(client.open_by_key(sheet_id).worksheets())  # Lists all sheet/tab names
-
+# --- Company Symbol Search ---
+company_symbol = st.text_input("🔍 Search Company Symbol (e.g., AAPL, TSLA)", "").strip().upper()
 
 if company_symbol:
-    # Extract data for the given company symbol
+    # --- Fetch Data from Google Sheets ---
+    @st.cache_data(ttl=3600)  # Cache for 1 hour
+    def fetch_data(symbol):
+        query = f"""
+        SELECT 
+            A as date, 
+            C as open, 
+            D as high, 
+            E as low, 
+            F as close, 
+            G as volume 
+        FROM "{st.secrets['private_gsheets_url']}"
+        WHERE B = '{symbol}'
+        ORDER BY A ASC
+        """
+        rows = conn.execute(query, headers=1)
+        return pd.DataFrame(rows)
+
+    df = fetch_data(company_symbol)
+
+    if df.empty:
+        st.error(f"No data found for symbol: {company_symbol}")
+        st.stop()
+
+    # --- Data Processing ---
     try:
-        df = get_data_from_sheet(client, sheet_id, sheet_name, company_symbol)
+        # Convert and validate data types
+        df['date'] = pd.to_datetime(df['date'])
+        numeric_cols = ['open', 'high', 'low', 'close', 'volume']
+        df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric, errors='coerce')
+        
+        if df[numeric_cols].isnull().values.any():
+            st.error("Invalid numeric data detected")
+            st.stop()
 
-        # Check if data exists
-        if not df.empty:
-            df.sort_values('date', inplace=True)
-            df.reset_index(drop=True, inplace=True)
+        df.sort_values('date', inplace=True)
+        df.reset_index(drop=True, inplace=True)
+        df['point_change'] = df['close'].diff().fillna(0)
 
-            # ➕ Calculate point change
-            df['point_change'] = df['close'].diff().fillna(0)
+        # --- Signal Detection Algorithm ---
+        df['tag'] = ''
+        avg_volume = df['volume'].rolling(window=10).mean()
 
-            # --- Signal Tagging ---
-            df['tag'] = ''
-            avg_volume = df['volume'].rolling(window=10).mean()
+        for i in range(3, len(df) - 6):
+            row = df.iloc[i]
+            prev = df.iloc[i - 1]
+            next_candles = df.iloc[i + 1:i + 6]
+            body = abs(row['close'] - row['open'])
+            prev_body = abs(prev['close'] - prev['open'])
+            recent_tags = df['tag'].iloc[max(0, i-4):i]
 
-            for i in range(3, len(df) - 6):  # ensure room for lookahead
-                row = df.iloc[i]
-                prev = df.iloc[i - 1]
-                next_candles = df.iloc[i + 1:i + 6]  # next 5 candles
-                body = abs(row['close'] - row['open'])
-                prev_body = abs(prev['close'] - prev['open'])
-                recent_tags = df['tag'].iloc[max(0, i-4):i]
+            # Signal Logic (same as your original)
+            if (row['close'] > row['open']
+                and row['close'] >= row['high'] - (row['high'] - row['low']) * 0.1
+                and row['volume'] > avg_volume[i]
+                and body > prev_body
+                and '🟢' not in recent_tags.values):
+                df.at[i, 'tag'] = '🟢'
+                
+            elif (row['open'] > row['close']
+                  and row['close'] <= row['low'] + (row['high'] - row['low']) * 0.1
+                  and row['volume'] > avg_volume[i]
+                  and body > prev_body
+                  and '🔴' not in recent_tags.values):
+                df.at[i, 'tag'] = '🔴'
+            
+            # ⛔ Buyer Absorption
+            elif (
+                row['close'] > row['open']
+                and body > (row['high'] - row['low']) * 0.6
+                and row['volume'] > avg_volume[i] * 1.2
+            ):
+                if all(candle['close'] < row['open'] for _, candle in next_candles.iterrows()):
+                    df.at[i, 'tag'] = '⛔'
 
-                # 🟢 Aggressive Buyers
-                if (
-                    row['close'] > row['open']
-                    and row['close'] >= row['high'] - (row['high'] - row['low']) * 0.1
-                    and row['volume'] > avg_volume[i]
-                    and body > prev_body
-                    and '🟢' not in recent_tags.values
-                ):
-                    df.at[i, 'tag'] = '🟢'
-
-                # 🔴 Aggressive Sellers
-                elif (
-                    row['open'] > row['close']
-                    and row['close'] <= row['low'] + (row['high'] - row['low']) * 0.1
-                    and row['volume'] > avg_volume[i] 
-                    and body > prev_body
-                    and '🔴' not in recent_tags.values
-                ):
-                    df.at[i, 'tag'] = '🔴'
-
-                # ⛔ Buyer Absorption
-                elif (
-                    row['close'] > row['open']
-                    and body > (row['high'] - row['low']) * 0.6
-                    and row['volume'] > avg_volume[i] * 1.2
-                ):
-                    if all(candle['close'] < row['open'] for _, candle in next_candles.iterrows()):
-                        df.at[i, 'tag'] = '⛔'
-
-                # 🚀 Seller Absorption
-                elif (
-                    row['open'] > row['close']
-                    and body > (row['high'] - row['low']) * 0.6
-                    and row['volume'] > avg_volume[i] * 1.2
-                    and all(candle['close'] > row['open'] for _, candle in next_candles.iterrows())
-                ):
+            # 🚀 Seller Absorption
+            elif (
+                row['open'] > row['close']
+                and body > (row['high'] - row['low']) * 0.6
+                and row['volume'] > avg_volume[i] * 1.2
+                and all(candle['close'] > row['open'] for _, candle in next_candles.iterrows())
+            ):
                     df.at[i, 'tag'] = '🚀'
 
-                # 💥 Bullish POR
-                elif (
-                    i >= 10 and
-                    row['high'] > max(df['high'].iloc[i - 10:i])
-                    and row['volume'] > avg_volume[i] * 1.8
-                ):
-                    if not (df['tag'].iloc[i - 3:i] == '💥').any():
-                        df.at[i, 'tag'] = '💥'
 
-                # 💣 Bearish POR
-                elif (
-                    i >= 10 and
-                    row['low'] < min(df['low'].iloc[i - 10:i])
-                    and row['volume'] > avg_volume[i] * 1.8
-                ):
-                    if not (df['tag'].iloc[i - 3:i] == '💣').any():
-                        df.at[i, 'tag'] = '💣'
+            # 💥 Bullish POR
+            elif (
+                i >= 10 and
+                row['high'] > max(df['high'].iloc[i - 10:i])
+                and row['volume'] > avg_volume[i] * 1.8
+            ):
+                if not (df['tag'].iloc[i - 3:i] == '💥').any():
+                    df.at[i, 'tag'] = '💥'
 
-                # 🐂 Bullish POI
-                elif (
-                    row['close'] > row['open']
-                    and body > (row['high'] - row['low']) * 0.7
-                    and row['volume'] > avg_volume[i] * 2
-                ):
-                    df.at[i, 'tag'] = '🐂'
+            # 💣 Bearish POR
+            elif (
+                i >= 10 and
+                row['low'] < min(df['low'].iloc[i - 10:i])
+                and row['volume'] > avg_volume[i] * 1.8
+            ):
+                if not (df['tag'].iloc[i - 3:i] == '💣').any():
+                    df.at[i, 'tag'] = '💣'
 
-                # 🐻 Bearish POI
-                elif (
-                    row['open'] > row['close']
-                    and body > (row['high'] - row['low']) * 0.7
-                    and row['volume'] > avg_volume[i] * 2
-                ):
-                    df.at[i, 'tag'] = '🐻'
+            # 🐂 Bullish POI
+            elif (
+                row['close'] > row['open']
+                and body > (row['high'] - row['low']) * 0.7
+                and row['volume'] > avg_volume[i] * 2
+            ):
+                df.at[i, 'tag'] = '🐂'
 
-                # 📉 Bullish Weak Legs (updated)
-                elif (
-                    df['point_change'].iloc[i] > 0
-                    and row['close'] > row['open']
-                    and body < 0.3 * prev_body
-                    and row['volume'] < avg_volume[i] * 1.1
-                ):
-                    df.at[i, 'tag'] = '📉'
+            # 🐻 Bearish POI
+            elif (
+                row['open'] > row['close']
+                and body > (row['high'] - row['low']) * 0.7
+                and row['volume'] > avg_volume[i] * 2
+            ):
+                df.at[i, 'tag'] = '🐻'
 
-                # 📈 Bearish Weak Legs (updated)
-                elif (
-                    df['point_change'].iloc[i] < 0
-                    and row['open'] > row['close']
-                    and body < 0.3 * prev_body
-                    and row['volume'] < avg_volume[i] * 1.1
-                ):
-                    df.at[i, 'tag'] = '📈'
-                
-                # ⚠️ Fake Drop - Large bearish candle but weak volume
-                elif ( 
-                    row['open'] > row['close']
-                    and body >= 0.3 * prev_body
-                    and row['volume'] < avg_volume[i] * 1.1
-                    and prev['close'] > prev['open']
-                    and '⚠️ D' not in recent_tags.values
-                ):
-                    df.at[i, 'tag'] = '⚠️ D'
+            # 📉 Bullish Weak Legs (updated)
+            elif (
+                df['point_change'].iloc[i] > 0
+                and row['close'] > row['open']
+                and body < 0.3 * prev_body
+                and row['volume'] < avg_volume[i] * 1.1
+            ):
+                df.at[i, 'tag'] = '📉'
 
-                # ⚠️ Fake Rise - Large bullish candle but weak volume
-                elif (
-                    row['close'] > row['open']
-                    and body >= 0.3 * prev_body
-                    and row['volume'] < avg_volume[i] *1.1
-                    and prev['open'] > prev['close']
-                    and '⚠️ R' not in recent_tags.values
-                ):
-                    df.at[i, 'tag'] = '⚠️ R'
+            # 📈 Bearish Weak Legs (updated)
+            elif (
+                df['point_change'].iloc[i] < 0
+                and row['open'] > row['close']
+                and body < 0.3 * prev_body
+                and row['volume'] < avg_volume[i] * 1.1
+            ):
+                df.at[i, 'tag'] = '📈'
+            
+            # ⚠️ Fake Drop - Large bearish candle but weak volume
+            elif ( 
+                row['open'] > row['close']
+                and body >= 0.3 * prev_body
+                and row['volume'] < avg_volume[i] * 1.1
+                and prev['close'] > prev['open']
+                and '⚠️ D' not in recent_tags.values
+            ):
+                df.at[i, 'tag'] = '⚠️ D'
 
-            # --- Filter tags ---   
-            tags_available = [tag for tag in df['tag'].unique() if tag]
-            selected_tags = st.multiselect("Select Signal(s) to View", options=tags_available, default=tags_available)
+            # ⚠️ Fake Rise - Large bullish candle but weak volume
+            elif (
+                row['close'] > row['open']
+                and body >= 0.3 * prev_body
+                and row['volume'] < avg_volume[i] *1.1
+                and prev['open'] > prev['close']
+                and '⚠️ R' not in recent_tags.values
+            ):
+                df.at[i, 'tag'] = '⚠️ R'
 
-            # --- Plotting Chart ---
-            fig = go.Figure()
+        # --- Visualization ---
+        st.subheader(f"Smart Money Signals for {company_symbol}")
+        
+        # Tag filter
+        tags_available = [tag for tag in df['tag'].unique() if tag]
+        selected_tags = st.multiselect(
+            "Filter Signals", 
+            options=tags_available, 
+            default=tags_available
+        )
+
+        # Interactive Plotly Chart
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=df['date'], y=df['close'],
+            mode='lines', name='Price',
+            line=dict(color='#1f77b4', width=2)
+        ))
+
+        # Add signals
+        for tag in selected_tags:
+            subset = df[df['tag'] == tag]
             fig.add_trace(go.Scatter(
-                x=df['date'], y=df['close'],
-                mode='lines', name='Close Price',
-                line=dict(color='lightblue', width=2),
-                hovertext=df['close'],
-                hoverinfo="x+y+text"
-            ))
-
-            # Tag descriptions
-            tag_labels = {
-                '🟢': '🟢 Aggressive Buyers',
-                '🔴': '🔴 Aggressive Sellers',
-                '⛔': '⛔ Buyer Absorption',
-                '🚀': '🚀 Seller Absorption',
-                '💥': '💥 Bullish POR',
-                '💣': '💣 Bearish POR',
-                '🐂': '🐂 Bullish POI',
-                '🐻': '🐻 Bearish POI',
-                '📉': '📉 Bullish Weak Legs',
-                '📈': '📈 Bearish Weak Legs',
-                '⚠️ D': '⚠️ Fake Drop',
-                '⚠️ R': '⚠️ Fake Rise'
-            }
-
-            for tag in selected_tags:
-                subset = df[df['tag'] == tag]
-                fig.add_trace(go.Scatter(
                 x=subset['date'], y=subset['close'],
                 mode='markers+text',
-                name=tag_labels.get(tag, tag),
-                text=[tag] * len(subset),
-                textposition='top center',
-                textfont=dict(size=20),
-                marker=dict(size=14, symbol="circle", color='white'),
-                customdata=subset[['open', 'high', 'low', 'close', 'point_change']].values,
-                hovertemplate=(
-                    "📅 Date: %{x|%Y-%m-%d}<br>" +
-                    "🟢 Open: %{customdata[0]:.2f}<br>" +
-                    "📈 High: %{customdata[1]:.2f}<br>" +
-                    "📉 Low: %{customdata[2]:.2f}<br>" +
-                    "🔚 Close: %{customdata[3]:.2f}<br>" +
-                    "📊 Point Change: %{customdata[4]:.2f}<br>" +
-                    f"{tag_labels.get(tag, tag)}<extra></extra>"
-            )
-        ))
+                name=tag,
+                marker=dict(size=12, symbol="diamond", line=dict(width=2)),
+                textposition='top center'
+            ))
+
         fig.update_layout(
-            height=800,
-            plot_bgcolor="black",
-            paper_bgcolor="black",
-            font_color="white",
-            legend=dict(font=dict(size=14)),
-            title="Smart Money Signals Chart",
-            xaxis=dict(
-                title="Date",
-                tickangle=-45,
-                showgrid=False
-            ),
-            yaxis=dict(
-                title="Price",
-                showgrid=True,
-                gridcolor="gray",
-                zeroline=True,
-                zerolinecolor="gray",
-            ),
-            margin=dict(l=50, r=50, b=150, t=50),
+            hovermode='x unified',
+            template='plotly_dark',
+            height=700
         )
         st.plotly_chart(fig, use_container_width=True)
+
+        # --- Recent Signals Table ---
+        st.subheader("📋 Recent Signals")
+        last_date = df['date'].max()
+        recent_df = df[(df['date'] > last_date - timedelta(days=30)) & (df['tag'] != '')]
+        st.dataframe(
+            recent_df[['date', 'open', 'high', 'low', 'close', 'volume', 'tag']]
+            .sort_values('date', ascending=False)
+            .style.format({
+                'open': '{:.2f}', 'high': '{:.2f}', 
+                'low': '{:.2f}', 'close': '{:.2f}'
+            })
+        )
+
+        # --- Download Option ---
+        csv = recent_df.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📥 Download Recent Signals (CSV)",
+            data=csv,
+            file_name=f'{company_symbol}_signals.csv',
+            mime='text/csv'
+        )
+
     except Exception as e:
-        st.error(f"An error occurred: {str(e)}")
+        st.error(f"Error processing data: {str(e)}")
+
 else:
-    st.info("Please enter a company symbol to fetch data.")
+    st.info("ℹ️ Enter a company symbol to analyze trading signals")
