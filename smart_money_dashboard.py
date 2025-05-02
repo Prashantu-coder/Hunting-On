@@ -156,7 +156,7 @@ if company_symbol:
 
             elif (
                 row['open'] > row['close'] and
-                body >= 0.3 * prev_body and
+                body >= 0.4 * prev_body and
                 row['volume'] < avg_volume[i] * 1.1 and
                 prev['close'] > prev['open'] and
                 '⚠️ D' not in recent_tags.values
@@ -166,7 +166,7 @@ if company_symbol:
 
             elif (
                 row['close'] > row['open'] and
-                body >= 0.3 * prev_body and
+                body >= 0.4 * prev_body and
                 row['volume'] < avg_volume[i] * 1.1 and
                 prev['open'] > prev['close'] and
                 '⚠️ R' not in recent_tags.values and 
