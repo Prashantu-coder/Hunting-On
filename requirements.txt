@@ -3,3 +3,4 @@ pandas
 plotly
 xlsxwriter
 gspread
+gspread google-auth oauth2client
