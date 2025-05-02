@@ -1,22 +1,35 @@
 import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
-import io
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 from datetime import timedelta
 
 # --- Page setup ---
 st.set_page_config(page_title="Quantexo", layout="wide")
 st.title("Advanced Insights for Bold Trades")
 
-# --- Upload data ---
-uploaded_file = st.file_uploader("Upload Daily OHLCV CSV", type="csv")
+# Google Sheets authentication
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+creds = ServiceAccountCredentials.from_json_keyfile_name("path_to_your_service_account_credentials.json", scope)
+client = gspread.authorize(creds)
 
-if uploaded_file:
-    df = pd.read_csv(uploaded_file)
-    df.columns = [col.lower() for col in df.columns]
-    required_cols = {'date', 'open', 'high', 'low', 'close', 'volume'}
+# --- Google Sheet link setup ---
+sheet_id = "your_google_sheet_id"  # Fill in your Google Sheet ID here
+sheet_name = "your_sheet_name"     # Fill in your sheet name here
 
-    if required_cols.issubset(set(df.columns)):
+# Open the Google Sheet and load the data
+sheet = client.open_by_key(sheet_id).worksheet(sheet_name)
+data = sheet.get_all_records()
+
+# Convert to DataFrame
+df = pd.DataFrame(data)
+
+# --- Data Processing ---
+df.columns = [col.lower() for col in df.columns]
+required_cols = {'date', 'open', 'high', 'low', 'close', 'volume'}
+
+if required_cols.issubset(set(df.columns)):
         df['date'] = pd.to_datetime(df['date'])
         df.sort_values('date', inplace=True)
         df.reset_index(drop=True, inplace=True)
@@ -176,9 +189,7 @@ if uploaded_file:
             '📉': '📉 Bullish Weak Legs',
             '📈': '📈 Bearish Weak Legs',
             '⚠️ D': '⚠️ Fake Drop',
-            '⚠️ R': '⚠️ Fake Rise',
-            'Buyer Absorption':'Buyer Absorption',
-            'Seller Absorption' : 'Seller Absorption'
+            '⚠️ R': '⚠️ Fake Rise'
         }
 
         for tag in selected_tags:
@@ -228,10 +239,10 @@ if uploaded_file:
         st.plotly_chart(fig, use_container_width=True)
 
         # --- Table for last 1 month signals ---
-        st.subheader("📋 Recent 1 Month Signal Observed")
+        st.subheader("📋 Recent 2 Month Signal Observed")
         last_date = df['date'].max()
-        one_month_ago = last_date - timedelta(days=30)
-        recent_df = df[(df['date'] >= one_month_ago) & (df['tag'] != '')]
+        two_month_ago = last_date - timedelta(days=60)
+        recent_df = df[(df['date'] >= two_month_ago) & (df['tag'] != '')]
 
         st.dataframe(recent_df[['date', 'open', 'high', 'low', 'close', 'point_change', 'volume', 'tag']].sort_values('date', ascending=False))
 
@@ -247,6 +258,5 @@ if uploaded_file:
             file_name='recent_1_month_signals.xlsx',
             mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
-
-    else:
+else:
         st.error("❌ Missing required columns: date, open, high, low, close, volume")
