@@ -1,8 +1,5 @@
-streamlit
-pandas
-plotly
-xlsxwriter
-gspread
-google-auth 
-oauth2client
-C:\Users\Dell\Downloads\quantexo-458612-3f15459a6740.json
+pandas>=1.5
+streamlit>=1.25
+plotly>=5.10
+google-auth>=2.3
+gsheetsdb>=0.1.12
