@@ -33,7 +33,7 @@ if company_symbol:
     def get_sheet_gid(sheet_name):
         # You need to know the gid value of the sheet, or you can find it in the sheet's URL when editing the sheet
         sheet_gids = {
-            "Sheet1": 0,  # Default sheet (GID of Sheet1)
+            "Daily Price": 0,  # Default sheet (GID of Sheet1)
             "Sheet2": 123456789,  # Example GID for Sheet2
             # Add more sheets here with their respective GIDs
         }
