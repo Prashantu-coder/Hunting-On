@@ -15,8 +15,8 @@ creds = ServiceAccountCredentials.from_json_keyfile_name("path_to_your_service_a
 client = gspread.authorize(creds)
 
 # --- Google Sheet link setup ---
-sheet_id = "your_google_sheet_id"  # Fill in your Google Sheet ID here
-sheet_name = "your_sheet_name"     # Fill in your sheet name here
+sheet_id = "1_pmG2oMSEk8VciNm2uqcshyvPPZBbjf-oKV59chgT1w"  # Fill in your Google Sheet ID here
+sheet_name = "Daily Price"     # Fill in your sheet name here
 
 # Open the Google Sheet and load the data
 sheet = client.open_by_key(sheet_id).worksheet(sheet_name)
