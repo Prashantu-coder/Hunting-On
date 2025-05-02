@@ -241,27 +241,27 @@ if company_symbol:
         )
     ))
 
-# --- Layout customization ---
-fig.update_layout(
-    height=800,
-    plot_bgcolor="black",
-    paper_bgcolor="black",
-    font_color="white",
-    legend=dict(font=dict(size=14)),
-    title="Smart Money Signals Chart",
-    xaxis=dict(
-        title="Date",
-        tickangle=-45,
-        showgrid=False
-    ),
-    yaxis=dict(
-        title="Price",
-        showgrid=True,
-        gridcolor="gray",
-        zeroline=True,
-        zerolinecolor="gray",
-    ),
-    margin=dict(l=50, r=50, b=150, t=50),
+        # --- Layout customization ---
+        fig.update_layout(
+            height=800,
+            plot_bgcolor="black",
+            paper_bgcolor="black",
+            font_color="white",
+            legend=dict(font=dict(size=14)),
+            title="Smart Money Signals Chart",
+            xaxis=dict(
+            title="Date",
+            tickangle=-45,
+            showgrid=False
+        ),
+            yaxis=dict(
+            title="Price",
+            showgrid=True,
+            gridcolor="gray",
+            zeroline=True,
+            zerolinecolor="gray",
+        ),  
+            margin=dict(l=50, r=50, b=150, t=50),
 )
 
 # --- Plot the figure ---
