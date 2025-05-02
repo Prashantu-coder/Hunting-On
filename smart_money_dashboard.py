@@ -34,12 +34,11 @@ if company_symbol:
         # You need to know the gid value of the sheet, or you can find it in the sheet's URL when editing the sheet
         sheet_gids = {
             "Daily Price": 0,  # Default sheet (GID of Sheet1)
-            "Sheet2": 123456789,  # Example GID for Sheet2
             # Add more sheets here with their respective GIDs
         }
         return sheet_gids.get(sheet_name, 0)  # Default to GID 0 if sheet_name not found
 
-    sheet_name = st.selectbox("Select the sheet you want to load", ["Sheet1", "Sheet2"])  # Add more options for other sheets
+    sheet_name = st.selectbox("Select the sheet you want to load", ["Daily Price"])  # Add more options for other sheets
 
     df = get_sheet_data(company_symbol, sheet_name)
 
