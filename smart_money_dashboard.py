@@ -21,9 +21,12 @@ if company_symbol:
             # Read data as CSV directly (no auth needed if public)
             df = pd.read_csv(sheet_url)
 
+            # Ensure only the first 7 columns are used (ignoring any additional columns)
+            df = df.iloc[:, :7]  # Select only the first 7 columns
+
             # Define the columns based on the new column mappings
             df.columns = ['date', 'symbol', 'open', 'high', 'low', 'close', 'volume']
-
+            
             # Filter data based on company symbol
             return df[df['symbol'].str.upper() == symbol.upper()]
         except Exception as e:
