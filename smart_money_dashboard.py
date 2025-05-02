@@ -26,7 +26,7 @@ if company_symbol:
 
             # Define the columns based on the new column mappings
             df.columns = ['date', 'symbol', 'open', 'high', 'low', 'close', 'volume']
-            
+
             # Filter data based on company symbol
             return df[df['symbol'].str.upper() == symbol.upper()]
         except Exception as e:
@@ -160,6 +160,7 @@ if company_symbol:
                 row['volume'] < avg_volume[i] * 1.1 and
                 prev['close'] > prev['open'] and
                 '⚠️ D' not in recent_tags.values
+                and '⚠️ R' not in recent_tags.values
             ):
                 df.at[i, 'tag'] = '⚠️ D'
 
@@ -168,7 +169,8 @@ if company_symbol:
                 body >= 0.3 * prev_body and
                 row['volume'] < avg_volume[i] * 1.1 and
                 prev['open'] > prev['close'] and
-                '⚠️ R' not in recent_tags.values
+                '⚠️ R' not in recent_tags.values and 
+                '⚠️ D' not in recent_tags.values
             ):
                 df.at[i, 'tag'] = '⚠️ R'
 
