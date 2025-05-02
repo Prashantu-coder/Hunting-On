@@ -17,11 +17,13 @@ st.title("📈 Advanced Smart Money Signals")
 try:
     # Retrieve the private key from secrets
     private_key = st.secrets["gcp_service_account"]["private_key"]
+    st.write(f"Private key length: {len(private_key)}")  # This will print the length of the private key
 
     # Create a temporary file to store the private key
     with tempfile.NamedTemporaryFile(delete=False) as temp_key_file:
         temp_key_file.write(private_key.encode())  # Write private key to temporary file
         temp_key_path = temp_key_file.name  # Get the path to the temporary file
+    st.write(f"Temporary key file created at: {temp_key_path}")  # Debugging path
 
     # Use the private key file for authentication
     credentials = service_account.Credentials.from_service_account_file(
