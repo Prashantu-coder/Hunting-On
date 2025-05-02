@@ -4,6 +4,7 @@ import plotly.graph_objects as go
 import io
 from datetime import timedelta
 import gspread
+import json
 
 # --- Page Setup ---
 st.set_page_config(page_title="Quantexo Trading Signals", layout="wide")
@@ -16,8 +17,9 @@ if company_symbol:
     @st.cache_data(ttl=3600)
     def get_sheet_data(symbol):
         try:
+            creds = st.secrets["gcp_service_account"]
+            gc = gspread.service_account_from_dict(dict(creds))
             # Replace 'Sheet1' with your sheet name
-            gc = gspread.service_account(filename='quantexo-458612-3f15459a6740d9db43cad5f8311b0975ddec4085.json')  # Or use anonymous access if no authentication is required
             sheet_url = "https://docs.google.com/spreadsheets/d/1_pmG2oMSEk8VciNm2uqcshyvPPZBbjf-oKV59chgT1w/edit?gid=0#gid=0"  # Replace with your sheet URL
             sheet = gc.open_by_url(sheet_url).worksheet("Daily Price")  # Change "Sheet1" to your actual sheet name
             data = sheet.get_all_records(value_render_option='UNFORMATTED_VALUE')
