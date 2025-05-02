@@ -10,10 +10,10 @@ st.set_page_config(page_title="Quantexo", layout="wide")
 st.title("📊 Smart Money Stock Dashboard")
 
 # 🔧 Your shared Google Sheet ID
-SHEET_ID = "your_actual_google_sheet_id"  # Replace with your actual Google Sheet ID
+SHEET_ID = "1_pmG2oMSEk8VciNm2uqcshyvPPZBbjf-oKV59chgT1w"  # Replace with your actual Google Sheet ID
 
 # 📋 Search for company input
-company = st.text_input("Search Company", placeholder="e.g., UpperTamakoshi")
+company = st.text_input("Daily Price", placeholder="e.g., UpperTamakoshi")
 
 if company:
     # 📋 Sanitize the company name to match the sheet name
