@@ -4,7 +4,16 @@ import plotly.graph_objects as go
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import timedelta
-import os
+import streamlit as st
+from google.oauth2 import service_account
+
+# Load credentials from Streamlit secrets
+credentials = service_account.Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"],
+    scopes=["https://www.googleapis.com/auth/spreadsheets"],
+)
+
+private_gsheets_url = st.secrets["private_gsheets_url"]
 
 # --- Google Sheets authentication ---
 def authenticate_google_sheets():
@@ -51,6 +60,9 @@ client = authenticate_google_sheets()
 
 # --- Search for company symbol ---
 company_symbol = st.text_input("Enter Company Symbol", "")
+
+print(client.open_by_key(sheet_id).worksheets())  # Lists all sheet/tab names
+
 
 if company_symbol:
     # Extract data for the given company symbol
