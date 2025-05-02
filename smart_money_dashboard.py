@@ -25,6 +25,10 @@ try:
         temp_key_path = temp_key_file.name  # Get the path to the temporary file
     st.write(f"Temporary key file created at: {temp_key_path}")  # Debugging path
 
+     # Read the temporary key file and print its contents for debugging
+    with open(temp_key_path, 'r') as file:
+        key_content = file.read()
+    st.write(f"Temporary key file content preview: {key_content[:100]}...")  # Display a preview of the first 100 characters
     # Use the private key file for authentication
     credentials = service_account.Credentials.from_service_account_file(
         temp_key_path,
