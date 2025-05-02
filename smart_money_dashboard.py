@@ -17,8 +17,8 @@ if company_symbol:
     @st.cache_data(ttl=3600)
     def get_sheet_data(symbol):
         try:
-            creds = json.loads(st.secrets["gcp_service_account"].to_json())
-            gc = gspread.service_account_from_dict(creds)
+            gc = gspread.service_account_from_dict(st.secrets["gcp_service_account"])
+
             # Replace 'Sheet1' with your sheet name
             sheet_url = "https://docs.google.com/spreadsheets/d/1_pmG2oMSEk8VciNm2uqcshyvPPZBbjf-oKV59chgT1w/edit?gid=0#gid=0"  # Replace with your sheet URL
             sheet = gc.open_by_url(sheet_url).worksheet("Daily Price")  # Change "Sheet1" to your actual sheet name
