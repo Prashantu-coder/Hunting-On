@@ -262,7 +262,7 @@ if company_symbol:
             zerolinecolor="gray",
         ),  
             margin=dict(l=50, r=50, b=150, t=50),
-)
+        )
 
-# --- Plot the figure ---
-st.plotly_chart(fig, use_container_width=True)
+    # --- Plot the figure ---
+    st.plotly_chart(fig, use_container_width=True)
