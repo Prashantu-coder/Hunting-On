@@ -10,6 +10,22 @@ from google.oauth2 import service_account
 st.set_page_config(page_title="Quantexo Trading Signals", layout="wide")
 st.title("📈 Advanced Smart Money Signals")
 
+# Authenticate using the credentials in the secrets.toml file
+creds = service_account.Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"]
+)
+
+# Authenticate and open the Google Sheet
+client = gspread.authorize(creds)
+
+# Access the sheet using its URL (from secrets.toml)
+spreadsheet_url = st.secrets["gsheet"]["url"]
+sheet = client.open_by_url(spreadsheet_url).sheet1
+
+# Example: Print the first 5 rows of the sheet
+rows = sheet.get_all_records()
+st.write(rows[:5])
+
 # --- Load Google Sheets Credentials ---
 try:
     creds = service_account.Credentials.from_service_account_info(
