@@ -1,6 +1,5 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
+import plotly.graph_objects as go
 import streamlit as st
 
 # Signal tag map
@@ -24,7 +23,7 @@ def load_csv(file):
     df['range'] = df['high'] - df['low']
     return df
 
-# Signal Detection Logic
+# Signal Detection Logic (same as before)
 def detect_bullish_weak_leg(df):
     return (
         (df['low'] > df['low'].shift(1)) &
@@ -126,23 +125,25 @@ if uploaded_file is not None:
     df = load_csv(uploaded_file)
     df = detect_all(df)
 
-    fig, ax = plt.subplots(figsize=(15, 6))
-    ax.plot(df.index, df['close'], label='Close Price', color='black', linewidth=1)
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=df.index, y=df['close'], mode='lines', name='Close Price'))
 
     for col, tag in signal_tags.items():
         if col in df.columns:
             signal_points = df[df[col]]
-            ax.scatter(signal_points.index, signal_points['close'], label=tag, marker='o', s=100, alpha=0.7)
-            for i in signal_points.index:
-                ax.text(i, signal_points.loc[i, 'close'], tag, fontsize=12, ha='center', va='bottom')
+            fig.add_trace(go.Scatter(
+                x=signal_points.index,
+                y=signal_points['close'],
+                mode='markers+text',
+                name=tag,
+                text=[tag] * len(signal_points),
+                textposition="top center",
+                marker=dict(size=10)
+            ))
 
-    ax.set_title("Price Line Chart with Signals")
-    ax.set_xlabel("Time")
-    ax.set_ylabel("Price")
-    ax.legend()
-    ax.grid(True)
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-    fig.autofmt_xdate()
-    st.pyplot(fig)
-
+    fig.update_layout(title="Price Line Chart with Signals",
+                      xaxis_title="Time",
+                      yaxis_title="Price",
+                      template="plotly_white")
+    st.plotly_chart(fig, use_container_width=True)
     st.dataframe(df.tail(20))
