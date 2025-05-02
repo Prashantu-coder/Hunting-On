@@ -5,9 +5,6 @@ import io
 from datetime import timedelta
 import gspread
 from google.oauth2 import service_account
-import json
-import os
-import tempfile
 
 # --- Page Setup ---
 st.set_page_config(page_title="Quantexo Trading Signals", layout="wide")
@@ -15,49 +12,12 @@ st.title("📈 Advanced Smart Money Signals")
 
 # --- Load Google Sheets Credentials ---
 try:
-    # Retrieve the private key from secrets
-    private_key = st.secrets["gcp_service_account"]["private_key"]
-    st.write(f"Private key length: {len(private_key)}")  # This will print the length of the private key
-
-    # Create a temporary JSON file with proper structure
-    credentials_json = {
-        "type": "service_account",
-        "project_id": st.secrets["gcp_service_account"]["project_id"],
-        "private_key_id": st.secrets["gcp_service_account"]["private_key_id"],
-        "private_key": private_key,
-        "client_email": st.secrets["gcp_service_account"]["client_email"],
-        "client_id": st.secrets["gcp_service_account"]["client_id"],
-        "auth_uri": st.secrets["gcp_service_account"]["auth_uri"],
-        "token_uri": st.secrets["gcp_service_account"]["token_uri"],
-        "auth_provider_x509_cert_url": st.secrets["gcp_service_account"]["auth_provider_x509_cert_url"],
-        "client_x509_cert_url": st.secrets["gcp_service_account"]["client_x509_cert_url"]
-    }
-
-    # Write the JSON structure to a temporary file
-    with tempfile.NamedTemporaryFile(delete=False, mode='w', encoding='utf-8') as temp_json_file:
-        json.dump(credentials_json, temp_json_file)
-        temp_json_path = temp_json_file.name  # Get the path to the temporary JSON file
-
-    # Debugging: Print the temporary JSON file path
-    st.write(f"Temporary JSON key file created at: {temp_json_path}")
-
-    # Use the temporary JSON file for authentication
-    credentials = service_account.Credentials.from_service_account_file(
-        temp_json_path,
-        scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
+    creds = service_account.Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"],
+        scopes=["https://www.googleapis.com/auth/spreadsheets"]
     )
-
-    # Authorize with Google Sheets
-    gc = gspread.authorize(credentials)
+    gc = gspread.authorize(creds)
     sheet_url = st.secrets["private_gsheets_url"]
-    sheet = gc.open_by_url(sheet_url).sheet1
-
-    # Clean up the temporary file after use
-    os.remove(temp_key_path)
-
-
-
-
 except Exception as e:
     st.error(f"🔴 Failed to authenticate: {str(e)}")
     st.stop()
