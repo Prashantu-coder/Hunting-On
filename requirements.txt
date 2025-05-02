@@ -5,3 +5,4 @@ xlsxwriter
 gspread
 google-auth 
 oauth2client
+C:\Users\Dell\Downloads\quantexo-458612-3f15459a6740.json
