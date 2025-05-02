@@ -5,6 +5,9 @@ import io
 from datetime import timedelta
 import gspread
 from google.oauth2 import service_account
+import json
+import os
+import tempfile
 
 # --- Page Setup ---
 st.set_page_config(page_title="Quantexo Trading Signals", layout="wide")
@@ -12,12 +15,28 @@ st.title("📈 Advanced Smart Money Signals")
 
 # --- Load Google Sheets Credentials ---
 try:
-    creds = service_account.Credentials.from_service_account_info(
-        st.secrets["gcp_service_account"],
-        scopes=["https://www.googleapis.com/auth/spreadsheets"]
+    # Retrieve the private key from secrets
+    private_key = st.secrets["gcp_service_account"]["private_key"]
+
+    # Create a temporary file to store the private key
+    with tempfile.NamedTemporaryFile(delete=False) as temp_key_file:
+        temp_key_file.write(private_key.encode())  # Write private key to temporary file
+        temp_key_path = temp_key_file.name  # Get the path to the temporary file
+
+    # Use the private key file for authentication
+    credentials = service_account.Credentials.from_service_account_file(
+        temp_key_path,
+        scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]  # or the appropriate scope
     )
-    gc = gspread.authorize(creds)
+
+    # Authorize with Google Sheets
+    gc = gspread.authorize(credentials)
     sheet_url = st.secrets["private_gsheets_url"]
+    sheet = gc.open_by_url(sheet_url).sheet1
+
+    # Clean up the temporary file after use
+    os.remove(temp_key_path)
+
 except Exception as e:
     st.error(f"🔴 Failed to authenticate: {str(e)}")
     st.stop()
