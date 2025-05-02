@@ -17,7 +17,7 @@ if company_symbol:
     def get_sheet_data(symbol):
         try:
             # Replace 'Sheet1' with your sheet name
-            gc = gspread.service_account(filename='your-service-account.json')  # Or use anonymous access if no authentication is required
+            gc = gspread.service_account(filename='quantexo-458612-3f15459a6740d9db43cad5f8311b0975ddec4085.json')  # Or use anonymous access if no authentication is required
             sheet_url = "https://docs.google.com/spreadsheets/d/1_pmG2oMSEk8VciNm2uqcshyvPPZBbjf-oKV59chgT1w/edit?gid=0#gid=0"  # Replace with your sheet URL
             sheet = gc.open_by_url(sheet_url).worksheet("Daily Price")  # Change "Sheet1" to your actual sheet name
             data = sheet.get_all_records(value_render_option='UNFORMATTED_VALUE')
