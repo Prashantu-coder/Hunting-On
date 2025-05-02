@@ -12,7 +12,7 @@ def authenticate_google_sheets():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     
     # Authenticate using the credentials file
-    creds = ServiceAccountCredentials.from_json_keyfile_name('./quantexo-458612-3f15459a6740.json', scope)  # Replace 'credentials.json' with your credentials file path
+    creds = ServiceAccountCredentials.from_json_keyfile_name('D:\New folder (2)\quantexo-458612-3f15459a6740.json', scope)  # Replace 'credentials.json' with your credentials file path
     client = gspread.authorize(creds)
     return client
 
