@@ -220,24 +220,24 @@ if company_symbol:
         }
 
         for tag in selected_tags:
-    subset = df[df['tag'] == tag]
-    fig.add_trace(go.Scatter(
-        x=subset['date'], y=subset['close'],
-        mode='markers+text',
-        name=tag_labels.get(tag, tag),
-        text=[tag] * len(subset),
-        textposition='top center',
-        textfont=dict(size=20),
-        marker=dict(size=14, symbol="circle", color='white'),
-        customdata=subset[['open', 'high', 'low', 'close', 'point_change']].values,
-        hovertemplate=(
-            "📅 Date: %{x|%Y-%m-%d}<br>" +
-            "🟢 Open: %{customdata[0]:.2f}<br>" +
-            "📈 High: %{customdata[1]:.2f}<br>" +
-            "📉 Low: %{customdata[2]:.2f}<br>" +
-            "🔚 Close: %{customdata[3]:.2f}<br>" +
-            "📊 Point Change: %{customdata[4]:.2f}<br>" +
-            f"{tag_labels.get(tag, tag)}<extra></extra>"
+            subset = df[df['tag'] == tag]
+            fig.add_trace(go.Scatter(
+            x=subset['date'], y=subset['close'],
+            mode='markers+text',
+            name=tag_labels.get(tag, tag),
+            text=[tag] * len(subset),
+            textposition='top center',
+            textfont=dict(size=20),
+            marker=dict(size=14, symbol="circle", color='white'),
+            customdata=subset[['open', 'high', 'low', 'close', 'point_change']].values,
+            hovertemplate=(
+                "📅 Date: %{x|%Y-%m-%d}<br>" +
+                "🟢 Open: %{customdata[0]:.2f}<br>" +
+                "📈 High: %{customdata[1]:.2f}<br>" +
+                "📉 Low: %{customdata[2]:.2f}<br>" +
+                "🔚 Close: %{customdata[3]:.2f}<br>" +
+                "📊 Point Change: %{customdata[4]:.2f}<br>" +
+                f"{tag_labels.get(tag, tag)}<extra></extra>"
         )
     ))
 
