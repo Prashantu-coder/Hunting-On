@@ -1,5 +1,4 @@
-pandas>=1.5
-streamlit>=1.25
-plotly>=5.10
-google-auth>=2.3
-gsheetsdb>=0.1.12
+gspread==6.0.2
+pandas==2.1.4
+plotly==5.18.0
+streamlit==1.29.0
