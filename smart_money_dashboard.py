@@ -41,6 +41,7 @@ if company_symbol:
         }
         return sheet_gids.get(sheet_name, 0)  # Default to GID 0 if sheet_name not found
 
+    sheet_name = "Daily Price"
     df = get_sheet_data(company_symbol, sheet_name)
 
     if df.empty:
@@ -254,7 +255,7 @@ if company_symbol:
             file_name='recent_1_month_signals.xlsx',
             mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
-        sheet_name = st.selectbox("Select the sheet you want to load", ["Daily Price"])  # Add more options for other sheets
+        
     except Exception as e:
         st.error(f"⚠️ Processing error: {str(e)}")
 
