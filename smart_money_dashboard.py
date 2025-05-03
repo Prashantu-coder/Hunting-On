@@ -49,17 +49,39 @@ if company_symbol:
         st.stop()
 
     try:
-        df['date'] = pd.to_datetime(df['date'], errors='coerce')
-        numeric_cols = ['open', 'high', 'low', 'close', 'volume']
-        df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric, errors='coerce')
-        df.dropna(subset=['date'] + numeric_cols, inplace=True)
+        # Convert column names to lowercase
+        df.columns = [col.lower() for col in df.columns]
 
-        if df.empty:
-            st.error("No valid data after cleaning")
+        # Check required columns
+        required_cols = {'date', 'open', 'high', 'low', 'close', 'volume'}
+        if not required_cols.issubset(set(df.columns)):
+            st.error("❌ Missing required columns: date, open, high, low, close, volume")
             st.stop()
 
+        # Convert and validate dates
+        df['date'] = pd.to_datetime(df['date'], errors='coerce')
+        if df['date'].isnull().any():
+            st.error("❌ Invalid date format in some rows")
+            st.stop()
+
+        # Validate numeric columns
+        numeric_cols = ['open', 'high', 'low', 'close', 'volume']
+        for col in numeric_cols:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+            if df[col].isnull().any():
+                st.error(f"❌ Non-numeric values found in {col} column")
+                st.stop()
+
+        # Remove any rows with NA values
+        df = df.dropna()
+        if len(df) == 0:
+            st.error("❌ No valid data after cleaning")
+            st.stop()
+
+        # Sort and reset index
         df.sort_values('date', inplace=True)
         df.reset_index(drop=True, inplace=True)
+        # ===== END OF ADDED VALIDATION =====
 
         df['point_change'] = df['close'].diff().fillna(0)
         df['tag'] = ''
