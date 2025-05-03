@@ -76,7 +76,7 @@ if company_symbol:
             if (
                 row['close'] > row['open'] and
                 row['close'] >= row['high'] - (row['high'] - row['low']) * 0.2 and
-                row['volume'] > avg_volume[i] and
+                row['volume'] > row['avg_volume'] and
                 body > prev_body and
                 '🟢' not in recent_tags.values
             ):
@@ -85,7 +85,7 @@ if company_symbol:
             elif (
                 row['open'] > row['close'] and
                 row['close'] <= row['low'] + (row['high'] - row['low']) * 0.2 and
-                row['volume'] > avg_volume[i] and
+                row['volume'] > row['avg_volume'] and
                 body > prev_body and
                 '🔴' not in recent_tags.values
             ):
