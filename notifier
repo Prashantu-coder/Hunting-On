@@ -2,7 +2,7 @@ name: Daily Signal Detection
 
 on:
   schedule:
-    - cron: '30 3 * * *'  # UTC time → 3:30 AM UTC daily (adjust as needed)
+    - cron: '30 10* * *'  # UTC time → 3:30 AM UTC daily (adjust as needed)
   workflow_dispatch:  # lets you run manually from GitHub too
 
 jobs:
