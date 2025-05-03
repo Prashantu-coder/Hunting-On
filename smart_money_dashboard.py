@@ -67,9 +67,14 @@ if company_symbol:
         # Validate numeric columns
         numeric_cols = ['open', 'high', 'low', 'close', 'volume']
         for col in numeric_cols:
-            df[col] = pd.to_numeric(df[col], errors='coerce')
+            df[col] = pd.to_numeric(
+                df[col].astype(str).str.replace('[^\d.]', '', regex=True),  # Remove non-numeric chars
+                errors='coerce'
+            )
             if df[col].isnull().any():
-                st.error(f"❌ Non-numeric values found in {col} column")
+                bad_rows = df[df[col].isnull()][['date', col]].head()
+                st.error(f"❌ Found {df[col].isnull().sum()} invalid values in {col} column. Examples:")
+                st.dataframe(bad_rows)
                 st.stop()
 
         # Remove any rows with NA values
