@@ -5,8 +5,8 @@ import io
 from datetime import timedelta
 
 # --- Page Setup ---
-st.set_page_config(page_title="Quantexo Trading Signals", layout="wide")
-st.title("📈 Advanced Smart Money Signals")
+st.set_page_config(page_title="Quantexo", layout="wide")
+st.title("💰 Advanced Insights for Bold Trades")
 
 # --- Company Search ---
 company_symbol = st.text_input("🔍 Search Company Symbol", "").strip().upper()
