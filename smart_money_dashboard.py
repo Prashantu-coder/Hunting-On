@@ -41,8 +41,6 @@ if company_symbol:
         }
         return sheet_gids.get(sheet_name, 0)  # Default to GID 0 if sheet_name not found
 
-    sheet_name = st.selectbox("Select the sheet you want to load", ["Daily Price"])  # Add more options for other sheets
-
     df = get_sheet_data(company_symbol, sheet_name)
 
     if df.empty:
