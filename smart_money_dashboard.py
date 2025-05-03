@@ -256,7 +256,7 @@ if company_symbol:
             file_name='recent_1_month_signals.xlsx',
             mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
-
+        sheet_name = st.selectbox("Select the sheet you want to load", ["Daily Price"])  # Add more options for other sheets
     except Exception as e:
         st.error(f"⚠️ Processing error: {str(e)}")
 
