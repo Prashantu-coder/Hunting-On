@@ -29,4 +29,4 @@ jobs:
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           EMAIL_RECEIVER: ${{ secrets.EMAIL_RECEIVER }}
         run: |
-          python send_email.py  # replace with your .py file name
+          python main/send_email.py  # replace with your .py file name
