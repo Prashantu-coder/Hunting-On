@@ -90,7 +90,7 @@ if company_symbol:
 
         df['point_change'] = df['close'].diff().fillna(0)
         df['tag'] = ''
-        avg_volume = df['volume'].rolling(window=10).mean()
+        avg_volume = df['volume'].rolling(window=20).mean()
 
         for i in range(3, len(df) - 6):
             row = df.iloc[i]
