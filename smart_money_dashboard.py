@@ -120,11 +120,12 @@ if company_symbol:
 
             elif (
                 row['close'] > row['open'] and
-                body > (row['high'] - row['low']) * 0.6 and
                 row['volume'] > avg_volume[i] * 1.2
             ):
-                if all(candle['close'] < row['open'] for _, candle in next_candles.iterrows()):
-                    df.at[i, 'tag'] = '⛔'
+                for j, candle in next_candles.iterrows():
+                    if candle['close'] < row['open']:  # Bearish confirmation
+                        df.at[j, 'tag'] = '⛔'  # Tag FIRST bearish candle closing below
+                    break  # Stop after first occurrence
 
             elif (
                 row['open'] > row['close'] and
