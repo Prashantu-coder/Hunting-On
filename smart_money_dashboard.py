@@ -128,11 +128,13 @@ if company_symbol:
 
             elif (
                 row['open'] > row['close'] and
-                body > (row['high'] - row['low']) * 0.6 and
                 row['volume'] > avg_volume[i] * 1.2 and
                 all(candle['close'] > row['open'] for _, candle in next_candles.iterrows())
             ):
-                df.at[i, 'tag'] = '🚀'
+                for j, candle in next_candles.iterrows():  # Check next 5 candles
+                    if candle['close'] > row['open']:  # Price recovers above bearish candle's open
+                        df.at[j, 'tag'] = '🚀'  # Tag the rejection candle
+                    break  # Stop at first confirmation
 
             elif (
                 i >= 10 and
