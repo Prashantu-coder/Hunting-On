@@ -197,24 +197,6 @@ if company_symbol:
                 row['volume'] < avg_volume[i] * 1.1
             ):
                 df.at[i, 'tag'] = '📈'
-            elif (
-                row['open'] > row['close'] and
-                body >= 0.4 * prev_body and
-                row['volume'] < avg_volume[i] * 1.1 and
-                prev['close'] > prev['open'] and
-                '⚠️ D' not in recent_tags.values
-                and '⚠️ R' not in recent_tags.values
-            ):
-                df.at[i, 'tag'] = '⚠️ D'
-            elif (
-                row['close'] > row['open'] and
-                body >= 0.4 * prev_body and
-                row['volume'] < avg_volume[i] and
-                prev['open'] > prev['close'] and
-                '⚠️ R' not in recent_tags.values and 
-                '⚠️ D' not in recent_tags.values
-            ):
-                df.at[i, 'tag'] = '⚠️ R'
 
         # --- Visualization ---
         st.subheader(f"{company_symbol} - Smart Money Line Chart")
@@ -243,9 +225,7 @@ if company_symbol:
             '🐂': '🐂 Bullish POI',
             '🐻': '🐻 Bearish POI',
             '📉': '📉 Bullish Weak Legs',
-            '📈': '📈 Bearish Weak Legs',
-            '⚠️ D': '⚠️ Fake Drop',
-            '⚠️ R': '⚠️ Fake Rise'
+            '📈': '📈 Bearish Weak Legs'
         }
 
         signals = df[df['tag'] != '']
