@@ -256,7 +256,7 @@ if company_symbol:
         fig.update_layout(
             height=800,
             width=1800,
-            plot_bgcolor="black",
+            plot_bgcolor="steelblue",
             paper_bgcolor="black",
             font_color="white",
             title="Smart Money Signals Chart",
