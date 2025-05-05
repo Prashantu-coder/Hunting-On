@@ -283,13 +283,14 @@ if company_symbol:
         st.subheader(" 🔍📅 Recent 1 Month Signal Observed")
         last_date = df['date'].max()
         one_month_ago = last_date - timedelta(days=30)
-        recent_df = df[(df['date'] >= one_month_ago) & (df['tag_labels'] != '')]
+        recent_df = df[(df['date'] >= one_month_ago) & (df['tag'] != '')]
+        recent_df['tag_description'] = recent_df['tag'].map(tag_labels)
 
-        st.dataframe(recent_df[['date', 'open', 'high', 'low', 'close', 'point_change', 'volume', 'tag_labels']].sort_values('date', ascending=False))
+        st.dataframe(recent_df[['date', 'open', 'high', 'low', 'close', 'point_change', 'volume', 'tag_description']].sort_values('date', ascending=False))
 
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            recent_df[['date', 'open', 'high', 'low', 'close', 'point_change', 'volume', 'tag_labels']].to_excel(writer, index=False, sheet_name='Signals')
+            recent_df[['date', 'open', 'high', 'low', 'close', 'point_change', 'volume', 'tag_description']].rename(columns={'tag_description':'Signa Description'}).to_excel(writer, index=False, sheet_name='Signals Detected for - {company_symbol}')
         processed_data = output.getvalue()
 
         st.download_button(
