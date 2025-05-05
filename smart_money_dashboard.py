@@ -131,7 +131,6 @@ if company_symbol:
             elif (
                 row['open'] > row['close'] and
                 row['volume'] > avg_volume[i] * 1.2 and
-                all(candle['close'] > row['open'] for _, candle in next_candles.iterrows())
             ):
                 for j, candle in next_candles.iterrows():  # Check next 5 candles
                     if candle['close'] > row['open']:  # Price recovers above bearish candle's open
