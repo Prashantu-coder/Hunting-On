@@ -273,6 +273,30 @@ if company_symbol:
 
         st.plotly_chart(fig, use_container_width=True)
 
+        # --- Custom Horizontal Legend Below Chart ---
+        st.markdown("### Signal Legend")
+        legend_items = {
+            '🟢': '🟢 Aggressive Buyers',
+            '🔴': '🔴 Aggressive Sellers',
+            '⛔': '⛔ Buyer Absorption',
+            '🚀': '🚀 Seller Absorption',
+            '💥': '💥 Bullish POR',
+            '💣': '💣 Bearish POR',
+            '🐂': '🐂 Bullish POI',
+            '🐻': '🐻 Bearish POI',
+            '📉': '📉 Bullish Weak Legs',
+            '📈': '📈 Bearish Weak Legs',
+            '⚠️ D': '⚠️ Fake Drop',
+            '⚠️ R': '⚠️ Fake Rise'
+        }
+
+        legend_html = "<div style='display: flex; flex-wrap: wrap; gap: 15px;'>"
+        for tag, desc in legend_items.items():
+            legend_html += f"<div style='background-color: #111; padding: 8px 12px; border-radius: 6px; color: white; font-size: 16px;'>{tag} {desc}</div>"
+        legend_html += "</div>"
+
+        st.markdown(legend_html, unsafe_allow_html=True)
+
         st.subheader("📋 Recent 1 Month Signal Observed")
         last_date = df['date'].max()
         one_month_ago = last_date - timedelta(days=30)
