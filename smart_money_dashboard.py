@@ -28,6 +28,7 @@ if company_symbol:
             df.columns = ['date', 'symbol', 'open', 'high', 'low', 'close', 'volume']
 
             # Filter data based on company symbol
+            df['symbol'] = df['symbol'].astype(str).str.strip().str.upper()
             return df[df['symbol'].str.upper() == symbol.upper()]
         except Exception as e:
             st.error(f"🔴 Error fetching data: {str(e)}")
@@ -117,7 +118,6 @@ if company_symbol:
                 '🔴' not in recent_tags.values
             ):
                 df.at[i, 'tag'] = '🔴'
-
             elif (
                 row['close'] > row['open'] and
                 row['volume'] > avg_volume[i] * 1.2
@@ -129,7 +129,6 @@ if company_symbol:
                     if candle['close'] < row['open']:  # Bearish confirmation
                         df.at[j, 'tag'] = '⛔'  # Tag FIRST bearish candle closing below
                         break  # Stop after first occurrence
-
             elif (
                 row['open'] > row['close'] and
                 row['volume'] > avg_volume[i] * 1.2 
@@ -141,7 +140,6 @@ if company_symbol:
                     if candle['close'] > row['open']:  # Price recovers above bearish candle's open
                         df.at[j, 'tag'] = '🚀'  # Tag the rejection candle
                         break  # Stop at first confirmation
-
             elif (
                 i >= 10 and
                 row['high'] > max(df['high'].iloc[i - 10:i]) and
@@ -149,7 +147,6 @@ if company_symbol:
             ):
                 if not (df['tag'].iloc[i - 3:i] == '💥').any():
                     df.at[i, 'tag'] = '💥'
-
             elif (
                 i >= 10 and
                 row['low'] < min(df['low'].iloc[i - 10:i]) and
@@ -157,21 +154,18 @@ if company_symbol:
             ):
                 if not (df['tag'].iloc[i - 3:i] == '💣').any():
                     df.at[i, 'tag'] = '💣'
-
             elif (
                 row['close'] > row['open'] and
                 body > (row['high'] - row['low']) * 0.7 and
                 row['volume'] > avg_volume[i] * 2
             ):
                 df.at[i, 'tag'] = '🐂'
-
             elif (
                 row['open'] > row['close'] and
                 body > (row['high'] - row['low']) * 0.7 and
                 row['volume'] > avg_volume[i] * 2
             ):
                 df.at[i, 'tag'] = '🐻'
-
             elif (
                 df['point_change'].iloc[i] > 0 and
                 row['close'] > row['open'] and
@@ -179,7 +173,6 @@ if company_symbol:
                 row['volume'] < avg_volume[i] * 1.1
             ):
                 df.at[i, 'tag'] = '📉'
-
             elif (
                 df['point_change'].iloc[i] < 0 and
                 row['open'] > row['close'] and
@@ -187,7 +180,6 @@ if company_symbol:
                 row['volume'] < avg_volume[i] * 1.1
             ):
                 df.at[i, 'tag'] = '📈'
-
             elif (
                 row['open'] > row['close'] and
                 body >= 0.4 * prev_body and
@@ -197,7 +189,6 @@ if company_symbol:
                 and '⚠️ R' not in recent_tags.values
             ):
                 df.at[i, 'tag'] = '⚠️ D'
-
             elif (
                 row['close'] > row['open'] and
                 body >= 0.4 * prev_body and
