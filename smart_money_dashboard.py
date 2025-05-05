@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
 import io
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 # --- Page Setup ---
 st.set_page_config(page_title="Quantexo", layout="wide")
