@@ -204,7 +204,7 @@ if company_symbol:
                 df.at[i, 'tag'] = '📈'
 
         # --- Visualization ---
-        st.subheader(f"{company_symbol} - Smart Money Line Chart")
+        # st.subheader(f"{company_symbol} - Smart Money Line Chart")
 
         fig = go.Figure()
         fig.add_trace(go.Scatter(
@@ -285,11 +285,11 @@ if company_symbol:
         one_month_ago = last_date - timedelta(days=30)
         recent_df = df[(df['date'] >= one_month_ago) & (df['tag'] != '')]
 
-        st.dataframe(recent_df[['date', 'open', 'high', 'low', 'close', 'point_change', 'volume', 'tag']].sort_values('date', ascending=False))
+        st.dataframe(recent_df[['date', 'open', 'high', 'low', 'close', 'point_change', 'volume', 'tag_labels']].sort_values('date', ascending=False))
 
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            recent_df[['date', 'open', 'high', 'low', 'close', 'point_change', 'volume', 'tag']].to_excel(writer, index=False, sheet_name='Signals')
+            recent_df[['date', 'open', 'high', 'low', 'close', 'point_change', 'volume', 'tag_labels']].to_excel(writer, index=False, sheet_name='Signals')
         processed_data = output.getvalue()
 
         st.download_button(
