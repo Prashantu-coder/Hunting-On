@@ -12,6 +12,11 @@ with open("styles.css") as f:
 
 st.markdown(
     """
+    <style>
+    .stApp {
+        background-color: slategray;
+    }
+    </style>
     <div class='header-container'>
         <div class='header-title'>Quantexo🕵️</div>
         <div class='header-subtitle'>💰 Advanced Insights for Bold Trades</div>
