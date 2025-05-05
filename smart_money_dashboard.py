@@ -3,6 +3,7 @@ import streamlit as st
 import plotly.graph_objects as go
 import io
 from datetime import datetime, timedelta
+import pytz
 
 # --- Page Setup ---
 st.set_page_config(page_title="Quantexo", layout="wide")
@@ -293,7 +294,8 @@ if company_symbol:
             recent_df[['date', 'open', 'high', 'low', 'close', 'point_change', 'volume', 'tag_description']].rename(columns={'tag_description':'Signa Description'}).to_excel(writer, index=False, sheet_name=f'Signals Detected for - {company_symbol}')
         processed_data = output.getvalue()
 
-        now = datetime.now()
+        nepali_tz = pytz.timezone('Asia/Kathmandu')
+        now = datetime.now(nepali_tz)
         timestamp_str = now.strftime("%Y-%B-%d_%I-%M%p")
         file_name = f"1_Months_Signal_{company_symbol}_{timestamp_str}_Quantexo🕵️_NEPSE.xlsx"
 
