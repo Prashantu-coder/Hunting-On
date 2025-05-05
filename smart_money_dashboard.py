@@ -9,7 +9,12 @@ st.set_page_config(page_title="Quantexo", layout="wide")
 st.title("💰 Advanced Insights for Bold Trades")
 
 # --- Company Search ---
-company_symbol = st.text_input("🔍 Search Company Symbol", "").strip().upper()
+col1, col2 = st.columns([3,1])
+with col1:
+    user_input = st.text_input("🔍 Search Company Symbol","", label_visibility="collapsed")
+with col2: search_clicked = st.button("Search")
+
+company_symbol = user_input.strip().upper() if search_clicked else""
 
 if company_symbol:
     @st.cache_data(ttl=3600)
