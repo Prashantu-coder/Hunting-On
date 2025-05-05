@@ -122,8 +122,9 @@ if company_symbol:
                 row['close'] > row['open'] and
                 row['volume'] > avg_volume[i] * 1.2
             ):
-                # Clear previous tags
-                df['tag'] = ''
+                 # Remove only existing ⛔ tags
+                df.loc[df['tag'] == '⛔', 'tag'] = ''
+
                 for j, candle in next_candles.iterrows():
                     if candle['close'] < row['open']:  # Bearish confirmation
                         df.at[j, 'tag'] = '⛔'  # Tag FIRST bearish candle closing below
@@ -133,8 +134,8 @@ if company_symbol:
                 row['open'] > row['close'] and
                 row['volume'] > avg_volume[i] * 1.2 
             ):
-                # Clear previous tags
-                df['tag'] = ''
+                 # Remove only existing 🚀 tags
+                df.loc[df['tag'] == '🚀', 'tag'] = ''
 
                 for j, candle in next_candles.iterrows():  # Check next 5 candles
                     if candle['close'] > row['open']:  # Price recovers above bearish candle's open
