@@ -285,7 +285,7 @@ if company_symbol:
         nepali_tz = pytz.timezone('Asia/Kathmandu')
         now = datetime.now(nepali_tz)
         timestamp_str = now.strftime("%Y-%B-%d_%I-%M%p")
-        img_name = f"{company_symbol}_{timestamp_str}_Quantexo🕵️_NEPSE"
+        img_name = f"{company_symbol}_{timestamp_str}_Quantexo🕵️_NEPSE.png"
         img_bytes = fig.to_image(format="png")
         st.download_button(
             label="📥 Download Chart as PNG",
