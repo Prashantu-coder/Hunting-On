@@ -4,6 +4,7 @@ import plotly.graph_objects as go
 import io
 from datetime import datetime, timedelta
 import pytz
+import kaleido
 
 # --- Page Setup ---
 st.set_page_config(page_title="Quantexo", layout="wide")
@@ -292,7 +293,7 @@ if company_symbol:
             file_name=img_name,
             mime="image/png"
         )
-        
+
         st.subheader(" 🔍📅 Recent 1 Month Signal Observed")
         last_date = df['date'].max()
         one_month_ago = last_date - timedelta(days=30)
