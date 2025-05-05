@@ -6,11 +6,11 @@ from datetime import timedelta
 
 # --- Page Setup ---
 st.set_page_config(page_title="Quantexo", layout="wide")
-st.title("💰 Advanced Insights for Bold Trades")
 
 st.markdown(
     """
     <div style='text-align: center; font-size: 36px; font-weight: bold; color: white;'>Quantexo🕵️</div>
+    <div style='text-align: center; font-size: 22px; color: white; margin-top: 4px;'>💰 Advanced Insights for Bold Trades</div>
     """,
     unsafe_allow_html=True
 )
