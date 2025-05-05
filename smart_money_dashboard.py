@@ -270,7 +270,9 @@ if company_symbol:
                     f"{tag_labels.get(tag, tag)}<extra></extra>"
                 )
             ))
-
+        # Calculate one month ahead of the last date
+        last_date = df['date'].max()
+        extended_date = last_date + timedelta(days=30)
         fig.update_layout(
             height=800,
             width=1800,
@@ -278,7 +280,7 @@ if company_symbol:
             paper_bgcolor="black",
             font_color="white",
             title="Smart Money Signals Chart",
-            xaxis=dict(title="Date", tickangle=-45, showgrid=False),
+            xaxis=dict(title="Date", tickangle=-45, showgrid=False, range=[df['date'].min(),extended_date]) #extend x-axis to show space after latest date,
             yaxis=dict(title="Price", showgrid=True, gridcolor="gray", zeroline=True, zerolinecolor="gray"),
             margin=dict(l=50, r=50, b=150, t=50),
             legend=dict(
