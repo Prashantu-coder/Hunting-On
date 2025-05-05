@@ -14,7 +14,7 @@ st.markdown(
     """
     <style>
     .stApp {
-        background-color: slategray;
+        background-color: blackcow;
     }
     </style>
     <div class='header-container'>
