@@ -8,6 +8,12 @@ from datetime import timedelta
 st.set_page_config(page_title="Quantexo", layout="wide")
 st.title("💰 Advanced Insights for Bold Trades")
 
+st.markdown(
+    """
+    <div style='text-align: center; font-size: 36px; font-weight: bold; color: white;'>Quantexo🕵️</div>
+    """,
+    unsafe_allow_html=True
+)
 # --- Company Search ---
 col1, col2 = st.columns([3,1])
 with col1:
@@ -281,7 +287,7 @@ if company_symbol:
 
         st.plotly_chart(fig, use_container_width=True)
 
-        st.subheader("📋 Recent 1 Month Signal Observed")
+        st.subheader(" 🔍📅 Recent 1 Month Signal Observed")
         last_date = df['date'].max()
         one_month_ago = last_date - timedelta(days=30)
         recent_df = df[(df['date'] >= one_month_ago) & (df['tag'] != '')]
