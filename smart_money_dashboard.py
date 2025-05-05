@@ -7,13 +7,19 @@ from datetime import timedelta
 # --- Page Setup ---
 st.set_page_config(page_title="Quantexo", layout="wide")
 
+with open("styles.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
 st.markdown(
     """
-    <div style='text-align: center; font-size: 36px; font-weight: bold; color: white;'>Quantexo🕵️</div>
-    <div style='text-align: center; font-size: 22px; color: white; margin-top: 4px;'>💰 Advanced Insights for Bold Trades</div>
+    <div class='header-container'>
+        <div class='header-title'>Quantexo🕵️</div>
+        <div class='header-subtitle'>💰 Advanced Insights for Bold Trades</div>
+    </div>
     """,
     unsafe_allow_html=True
 )
+
 # --- Company Search ---
 col1, col2 = st.columns([3,1])
 with col1:
