@@ -290,7 +290,7 @@ if company_symbol:
 
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            recent_df[['date', 'open', 'high', 'low', 'close', 'point_change', 'volume', 'tag_description']].rename(columns={'tag_description':'Signa Description'}).to_excel(writer, index=False, sheet_name='Signals Detected for - {company_symbol}')
+            recent_df[['date', 'open', 'high', 'low', 'close', 'point_change', 'volume', 'tag_description']].rename(columns={'tag_description':'Signa Description'}).to_excel(writer, index=False, sheet_name=f'Signals Detected for - {company_symbol}')
         processed_data = output.getvalue()
 
         st.download_button(
