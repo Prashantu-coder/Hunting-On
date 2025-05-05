@@ -211,9 +211,14 @@ if company_symbol:
             x=df['date'], y=df['close'],
             mode='lines', name='Close Price',
             line=dict(color='lightblue', width=2),
-            hovertext=df['close'],
-            hoverinfo="x+y+text"
-        ))
+            customdata=df[['date', 'close', 'point_change']],
+            hovertemplate=(
+                "📅 Date: %{customdata[0]|%Y-%m-%d}<br>" +
+                "💰 LTP: %{customdata[1]:.2f}<br>" +
+                "📊 Point Change: %{customdata[2]:.2f}<extra></extra>"
+            )
+        ))  
+
 
         tag_labels = {
             '🟢': '🟢 Aggressive Buyers',
@@ -247,7 +252,7 @@ if company_symbol:
                     "🟢 Open: %{customdata[0]:.2f}<br>" +
                     "📈 High: %{customdata[1]:.2f}<br>" +
                     "📉 Low: %{customdata[2]:.2f}<br>" +
-                    "🔚 Close: %{customdata[3]:.2f}<br>" +
+                    "🔚 LTP: %{customdata[3]:.2f}<br>" +
                     "📊 Point Change: %{customdata[4]:.2f}<br>" +
                     f"{tag_labels.get(tag, tag)}<extra></extra>"
                 )
