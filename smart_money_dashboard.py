@@ -273,6 +273,7 @@ if company_symbol:
 
         fig.update_layout(
             height=800,
+            width=1000,
             plot_bgcolor="black",
             paper_bgcolor="black",
             font_color="white",
@@ -290,8 +291,6 @@ if company_symbol:
                 bgcolor="rgba(0,0,0,0)"  # Optional: keeps legend background transparent),
             )
         )
-
-        st.plotly_chart(fig, use_container_width=True)
 
         st.subheader(" 🔍📅 Recent 1 Month Signal Observed")
         last_date = df['date'].max()
