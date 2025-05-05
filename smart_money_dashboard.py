@@ -256,8 +256,8 @@ if company_symbol:
         fig.update_layout(
             height=800,
             width=1800,
-            plot_bgcolor="steelblue",
-            paper_bgcolor="black",
+            plot_bgcolor="slategray",
+            paper_bgcolor="slategray",
             font_color="white",
             title="Smart Money Signals Chart",
             xaxis=dict(title="Date", tickangle=-45, showgrid=False, range=[df['date'].min(),extended_date]), #extend x-axis to show space after latest date
