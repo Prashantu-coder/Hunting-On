@@ -286,6 +286,11 @@ if company_symbol:
         now = datetime.now(nepali_tz)
         timestamp_str = now.strftime("%Y-%B-%d_%I-%M%p")
         img_name = f"{company_symbol}_{timestamp_str}_Quantexo🕵️_NEPSE.png"
+        fig.update_layout(
+            title=f"Smart Money Signals {company_symbol} 🕵️",
+            xaxis_title="Date",
+            yaxis_title="Price"
+        )
         img_bytes = fig.to_image(format="png")
         st.download_button(
             label="📥 Download Chart as PNG",
