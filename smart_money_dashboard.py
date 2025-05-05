@@ -294,7 +294,7 @@ if company_symbol:
         processed_data = output.getvalue()
 
         now = datetime.now()
-        timestamp_str = now.strftime("%y-%m-%d_%H-%M")
+        timestamp_str = now.strftime("%Y-%B-%d_%I-%M%p")
         file_name = f"1_Months_Signal_{company_symbol}_{timestamp_str}_Quantexo🕵️_NEPSE.xlsx"
 
         st.download_button(
