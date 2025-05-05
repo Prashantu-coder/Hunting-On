@@ -273,7 +273,7 @@ if company_symbol:
 
         fig.update_layout(
             height=800,
-            width=2000,
+            width=1700,
             plot_bgcolor="black",
             paper_bgcolor="black",
             font_color="white",
