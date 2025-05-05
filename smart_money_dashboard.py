@@ -120,7 +120,7 @@ if company_symbol:
 
             elif (
                 row['close'] > row['open'] and
-                row['volume'] > avg_volume[i] * 1.2
+                row['volume'] > avg_volume[i]
             ):
                 for j, candle in next_candles.iterrows():
                     if candle['close'] < row['open']:  # Bearish confirmation
@@ -129,7 +129,7 @@ if company_symbol:
 
             elif (
                 row['open'] > row['close'] and
-                row['volume'] > avg_volume[i] * 1.2 and
+                row['volume'] > avg_volume[i] and
                 all(candle['close'] > row['open'] for _, candle in next_candles.iterrows())
             ):
                 for j, candle in next_candles.iterrows():  # Check next 5 candles
@@ -196,7 +196,7 @@ if company_symbol:
             elif (
                 row['close'] > row['open'] and
                 body >= 0.4 * prev_body and
-                row['volume'] < avg_volume[i] * 1.1 and
+                row['volume'] < avg_volume[i] and
                 prev['open'] > prev['close'] and
                 '⚠️ R' not in recent_tags.values and 
                 '⚠️ D' not in recent_tags.values
@@ -252,7 +252,7 @@ if company_symbol:
                     "🟢 Open: %{customdata[0]:.2f}<br>" +
                     "📈 High: %{customdata[1]:.2f}<br>" +
                     "📉 Low: %{customdata[2]:.2f}<br>" +
-                    "🔚 LTP: %{customdata[3]:.2f}<br>" +
+                    "🔚 Close: %{customdata[3]:.2f}<br>" +
                     "📊 Point Change: %{customdata[4]:.2f}<br>" +
                     f"{tag_labels.get(tag, tag)}<extra></extra>"
                 )
