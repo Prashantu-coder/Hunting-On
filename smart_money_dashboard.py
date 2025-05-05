@@ -280,7 +280,19 @@ if company_symbol:
             )
         )
         st.plotly_chart(fig, use_container_width=False)
-
+        
+        nepali_tz = pytz.timezone('Asia/Kathmandu')
+        now = datetime.now(nepali_tz)
+        timestamp_str = now.strftime("%Y-%B-%d_%I-%M%p")
+        img_name = f"{company_symbol}_{timestamp_str}_Quantexo🕵️_NEPSE"
+        img_bytes = fig.to_image(format="png")
+        st.download_button(
+            label="📥 Download Chart as PNG",
+            data=img_bytes,
+            file_name=img_name,
+            mime="image/png"
+        )
+        
         st.subheader(" 🔍📅 Recent 1 Month Signal Observed")
         last_date = df['date'].max()
         one_month_ago = last_date - timedelta(days=30)
@@ -297,7 +309,7 @@ if company_symbol:
         nepali_tz = pytz.timezone('Asia/Kathmandu')
         now = datetime.now(nepali_tz)
         timestamp_str = now.strftime("%Y-%B-%d_%I-%M%p")
-        file_name = f"1_Months_Signal_{company_symbol}_{timestamp_str}_Quantexo🕵️_NEPSE.xlsx"
+        file_name = f"1_Months_Signal_{company_symbol}_{timestamp_str}_Quantexo🕵️_NEPSE"
 
         st.download_button(
             label="📥 Download 1 Month Signals as Excel",
