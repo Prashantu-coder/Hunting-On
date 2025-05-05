@@ -300,7 +300,7 @@ if company_symbol:
         st.download_button(
             label="📥 Download 1 Month Signals as Excel",
             data=processed_data,
-            file_name='file_name',
+            file_name=file_name,
             mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
         
