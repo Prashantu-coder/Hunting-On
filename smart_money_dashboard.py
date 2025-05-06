@@ -29,7 +29,7 @@ st.markdown(
 )
 
 # --- Company Search ---
-col1, col2 = st.columns([2,1])
+col1, col2 = st.columns([1,1])
 with col1:
     user_input = st.text_input("🔍 Search Company Symbol","", label_visibility="collapsed")
 with col2: search_clicked = st.button("Search")
