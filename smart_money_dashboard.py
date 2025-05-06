@@ -329,4 +329,4 @@ if company_symbol:
         st.error(f"⚠️ Processing error: {str(e)}")
 
 else:
-    st.info("ℹ👆🏻 Enter a company symbol to begin analysis 👆🏻")
+    st.info("ℹ👆🏻 Enter a company symbol to get analysed chart 👆🏻")
