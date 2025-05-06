@@ -261,13 +261,14 @@ if company_symbol:
         # Calculate one month ahead of the last date
         last_date = df['date'].max()
         extended_date = last_date + timedelta(days=30)
+        chart_bg = f" Advanced T.A. signal for {company_symbol} "
         fig.update_layout(
             height=800,
             width=1800,
             plot_bgcolor="darkslategray",
             paper_bgcolor="darkslategray",
             font_color="white",
-            title="Smart Money Signals Chart",
+            title=chart_bg,
             xaxis=dict(title="Date", tickangle=-45, showgrid=False, range=[df['date'].min(),extended_date]), #extend x-axis to show space after latest date
             yaxis=dict(title="Price", showgrid=False, zeroline=True, zerolinecolor="gray"),
             margin=dict(l=50, r=50, b=150, t=50),
