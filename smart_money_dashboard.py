@@ -118,7 +118,7 @@ if company_symbol:
         df['tag'] = ''
         
         # Dynamically adjust the rolling window size based on available data
-        min_window = min(20, max(5, len(df) // 2))  # Use at least 5 days, at most 20, or half the data
+        min_window = min(90, max(5, len(df) // 2))  # Use at least 5 days, at most 90, or half the data
         
         # Debug information
         st.write(f"Dataset contains {len(df)} data points. Using {min_window}-day rolling average.")
