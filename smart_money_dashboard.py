@@ -41,7 +41,7 @@ if company_symbol:
     def get_sheet_data(symbol, sheet_name="Daily Price"):
         try:
             # Google Sheets URL with the specific sheet's gid
-            sheet_url = f"https://docs.google.com/spreadsheets/d/1Q_En7VGGfifDmn5xuiF-t_02doPpwl4PLzxb4TBCW0Q/edit?gid={get_sheet_gid(sheet_name)}"
+            sheet_url = f"https://docs.google.com/spreadsheets/d/1Q_En7VGGfifDmn5xuiF-t_02doPpwl4PLzxb4TBCW0Q/export?format=csv&gid={get_sheet_gid(sheet_name)}"
             
             # Read data as CSV directly (no auth needed if public)
             df = pd.read_csv(sheet_url)
