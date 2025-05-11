@@ -300,8 +300,8 @@ if company_symbol:
                 paper_bgcolor="darkslategray",
                 font_color="white",
                 title=chart_bg,
-                xaxis=dict(title="Date", tickangle=-45, showgrid=False, range=[df['date'].min(),extended_date]), #extend x-axis to show space after latest date
-                yaxis=dict(title="Price", showgrid=False, zeroline=True, zerolinecolor="gray"),
+                xaxis=dict(title="Date", tickangle=-45, showgrid=False, range=[df['date'].min(),extended_date], rangeslider=dict(visible=True), type="date"), #extend x-axis to show space after latest date
+                yaxis=dict(title="Price", showgrid=False, zeroline=True, zerolinecolor="gray", autorange=True),
                 margin=dict(l=50, r=50, b=150, t=50),
                 legend=dict(
                     orientation="h",
@@ -313,7 +313,13 @@ if company_symbol:
                     bgcolor="rgba(0,0,0,0)"  # Optional: keeps legend background transparent),
                 )
             )
-            
+            # Add zoom and pan capabilities
+            dragmode="zoom",  # Enable box zoom
+            modebar=dict(
+                orientation="v",
+                bgcolor="rgba(0,0,0,0.2)",
+                color="white"
+            )
             # Add latest date highlight
             latest_data = df.iloc[-1]
             fig.add_trace(go.Scatter(
