@@ -120,9 +120,6 @@ if company_symbol:
         # Dynamically adjust the rolling window size based on available data
         min_window = min(20, max(5, len(df) // 2))  # Use at least 5 days, at most 90, or half the data
         
-        # Debug information
-        st.write(f"Dataset contains {len(df)} data points. Using {min_window}-day rolling average.")
-        
         # Calculate rolling average with adjusted window size
         avg_volume = df['volume'].rolling(window=min_window).mean()
         
