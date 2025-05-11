@@ -291,7 +291,7 @@ if company_symbol:
                 
             # Calculate one month ahead of the last date
             last_date = df['date'].max()
-            extended_date = last_date + timedelta(days=30)
+            extended_date = last_date + timedelta(days=20)
             chart_bg = f" Advanced T.A. signal for {company_symbol} "
             fig.update_layout(
                 height=800,
