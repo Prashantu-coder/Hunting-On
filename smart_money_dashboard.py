@@ -224,7 +224,7 @@ if company_symbol:
                     df['point_change'].iloc[i] > 0 and
                     row['close'] > row['open'] and
                     body < 0.3 * prev_body and
-                    row['volume'] < avg_volume[i] * 1.1
+                    row['volume'] < avg_volume[i] * 0.5
                 ):
                     df.at[i, 'tag'] = '📉'
                     
@@ -232,7 +232,7 @@ if company_symbol:
                     df['point_change'].iloc[i] < 0 and
                     row['open'] > row['close'] and
                     body < 0.3 * prev_body and
-                    row['volume'] < avg_volume[i] * 1.1
+                    row['volume'] < avg_volume[i] * 0.5
                 ):
                     df.at[i, 'tag'] = '📈'
 
