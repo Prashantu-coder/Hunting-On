@@ -118,7 +118,7 @@ if company_symbol:
         df['tag'] = ''
         
         # Dynamically adjust the rolling window size based on available data
-        min_window = min(20, max(5, len(df) // 2))  # Use at least 5 days, at most 90, or half the data
+        min_window = min(20, max(5, len(df) // 2))  # Use at least 5 days, at most 20, or half the data
         
         # Calculate rolling average with adjusted window size
         avg_volume = df['volume'].rolling(window=min_window).mean()
@@ -286,9 +286,9 @@ if company_symbol:
                     )
                 ))
                 
-            # Calculate one month ahead of the last date
+            # Calculate 15 days ahead of the last date
             last_date = df['date'].max()
-            extended_date = last_date + timedelta(days=20)
+            extended_date = last_date + timedelta(days=15)
             chart_bg = f" Advanced T.A. signal for {company_symbol} "
             fig.update_layout(
                 height=800,
