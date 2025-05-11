@@ -289,6 +289,7 @@ if company_symbol:
             # Calculate 15 days ahead of the last date
             last_date = df['date'].max()
             extended_date = last_date + timedelta(days=15)
+            chart_bg = f""
             fig.update_layout(
                 height=800,
                 width=1800,
