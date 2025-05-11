@@ -147,7 +147,7 @@ if company_symbol:
                 
                 if (
                     row['close'] > row['open'] and
-                    row['close'] >= row['high'] - (row['high'] - row['low']) * 0.2 and
+                    row['close'] >= row['high'] - (row['high'] - row['low']) * 0.1 and
                     row['volume'] > avg_volume[i] and
                     body > prev_body and
                     '🟢' not in recent_tags.values
@@ -156,7 +156,7 @@ if company_symbol:
 
                 elif (
                     row['open'] > row['close'] and
-                    row['close'] <= row['low'] + (row['high'] - row['low']) * 0.2 and
+                    row['close'] <= row['low'] + (row['high'] - row['low']) * 0.1 and
                     row['volume'] > avg_volume[i] and
                     body > prev_body and
                     '🔴' not in recent_tags.values
@@ -176,12 +176,6 @@ if company_symbol:
                         if candle['close'] < row['open']:  # Bearish confirmation
                             df.at[j, 'tag'] = '⛔'  # Tag FIRST bearish candle closing below
                             break  # Stop after first occurrence
-                            
-                # Special case for the latest candle - can mark without future confirmation
-                elif i == len(df) - 1 and row['open'] > row['close'] and row['volume'] > avg_volume[i] * 1.2:
-                    # This is the latest candle and meets initial criteria for a potential seller absorption
-                    # Mark with a pending signal that could become 🚀 with future confirmation
-                    df.at[i, 'tag'] = '⏳'  # Pending signal
                             
                 elif (
                     row['open'] > row['close'] and
