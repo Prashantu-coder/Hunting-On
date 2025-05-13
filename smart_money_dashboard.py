@@ -354,12 +354,6 @@ if company_symbol:
             else:
                 st.dataframe(latest_df[['date', 'open', 'high', 'low', 'close', 'volume', 'point_change', 'Current Status']])
                 st.info("ℹ️ No signal detected on the latest day based on current patterns")
-
-            st.subheader(" 🔍📅 Recent 1 Month Signal Observed")
-            last_date = df['date'].max()
-            one_month_ago = last_date - timedelta(days=30)
-            recent_df = df[(df['date'] >= one_month_ago) & (df['tag'] != '')]
-            recent_df['tag_description'] = recent_df['tag'].map(tag_labels)
         
         else:
             st.warning("⚠️ Unable to calculate trading signals due to insufficient data")
