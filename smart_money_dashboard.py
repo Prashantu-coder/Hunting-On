@@ -242,11 +242,14 @@ if company_symbol:
                 x=df['date'], y=df['close'],
                 mode='lines', name='Close Price',
                 line=dict(color='lightblue', width=2),
-                customdata=df[['date', 'close', 'point_change']],
+                customdata=df[['date', 'open', 'high', 'low', 'close', 'point_change']],
                 hovertemplate=(
                     "📅 Date: %{customdata[0]|%Y-%m-%d}<br>" +
-                    "💰 LTP: %{customdata[1]:.2f}<br>" +
-                    "📊 Point Change: %{customdata[2]:.2f}<extra></extra>"
+                    "🟢 Open: %{customdata[1]:.2f}<br>" +
+                    "📈 High: %{customdata[2]:.2f}<br>" +
+                    "📉 Low: %{customdata[3]:.2f}<br>" +
+                    "💰 LTP: %{customdata[4]:.2f}<br>" +
+                    "📊 Point Change: %{customdata[5]:.2f}<extra></extra>"
                 )
             ))  
 
@@ -334,9 +337,6 @@ if company_symbol:
                 ),
                 hovertemplate=(
                     "📅 LATEST DATA: %{x|%Y-%m-%d}<br>" +
-                    "🟢 Open: %{customdata[0]:.2f}<br>" +
-                    "📈 High: %{customdata[1]:.2f}<br>" +
-                    "📉 Low: %{customdata[2]:.2f}<br>" +
                     "💰 Close: %{y:.2f}<extra></extra>"
                 )
             ))
