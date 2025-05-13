@@ -334,6 +334,9 @@ if company_symbol:
                 ),
                 hovertemplate=(
                     "📅 LATEST DATA: %{x|%Y-%m-%d}<br>" +
+                    "🟢 Open: %{customdata[0]:.2f}<br>" +
+                    "📈 High: %{customdata[1]:.2f}<br>" +
+                    "📉 Low: %{customdata[2]:.2f}<br>" +
                     "💰 Close: %{y:.2f}<extra></extra>"
                 )
             ))
