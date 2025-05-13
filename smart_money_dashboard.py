@@ -6,6 +6,7 @@ import io
 from datetime import datetime, timedelta
 import pytz
 import kaleido
+import plotly.io as pio
 
 # --- Page Setup ---
 st.set_page_config(page_title="Quantexo", layout="wide")
@@ -353,40 +354,6 @@ if company_symbol:
             else:
                 st.dataframe(latest_df[['date', 'open', 'high', 'low', 'close', 'volume', 'point_change', 'Current Status']])
                 st.info("ℹ️ No signal detected on the latest day based on current patterns")
-            
-            nepali_tz = pytz.timezone('Asia/Kathmandu')
-            now = datetime.now(nepali_tz)
-            timestamp_str = now.strftime("%Y-%B-%d_%I-%M%p")
-            img_name = f"{company_symbol}_{timestamp_str}_Quantexo🕵️_NEPSE.png"
-            fig.update_layout(
-                title=f"Smart Money Signals {company_symbol} 🕵️",
-                xaxis_title="Date",
-                yaxis_title="Price"
-            )
-            img_bytes = fig.to_image(format="png")
-            st.download_button(
-                label="📥 Download Chart as PNG",
-                data=img_bytes,
-                file_name=img_name,
-                mime="image/png"
-            )
-            # Example filename: CZBIL_2025-05-13.png
-            nepali_tz = pytz.timezone('Asia/Kathmandu')
-            now = datetime.now(nepali_tz)
-            timestamp_str = now.strftime("%Y-%B-%d_%I-%M%p")
-            filename = f"{company_symbol}_{timestamp_str()}.png"
-
-            # Save the image locally
-            pio.write_image(fig, filename, format='png')
-
-            # Display a download button
-            with open(filename, "rb") as file:
-                btn = st.download_button(
-                    label="📥 Download Custom Plot",
-                    data=file,
-                    file_name=filename,
-                    mime="image/png"
-                )
 
             st.subheader(" 🔍📅 Recent 1 Month Signal Observed")
             last_date = df['date'].max()
