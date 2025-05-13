@@ -343,16 +343,15 @@ if company_symbol:
             # Show last day's data details
             st.subheader("🔍 Latest Price Data")
             latest_df = df.iloc[-1:].copy()
-            latest_df['Current Status'] = 'Most Recent'
             
             # Check if any signal was detected for the latest day
             latest_tag = latest_df['tag'].iloc[0] if not latest_df.empty else ''
             if latest_tag:
                 latest_df['Signal'] = f"{latest_tag} {tag_labels.get(latest_tag, '')}"
-                st.dataframe(latest_df[['date', 'open', 'high', 'low', 'close', 'volume', 'point_change', 'Signal', 'Current Status']])
+                st.dataframe(latest_df[['date', 'open', 'high', 'low', 'close', 'volume', 'point_change', 'Signal']])
                 st.success(f"🎯 Signal detected on latest day: {tag_labels.get(latest_tag, latest_tag)}")
             else:
-                st.dataframe(latest_df[['date', 'open', 'high', 'low', 'close', 'volume', 'point_change', 'Current Status']])
+                st.dataframe(latest_df[['date', 'open', 'high', 'low', 'close', 'volume', 'point_change']])
                 st.info("ℹ️ No signal detected on the latest day based on current patterns")
         
         else:
