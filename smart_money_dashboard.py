@@ -372,7 +372,7 @@ if company_symbol:
                 mime="image/png"
             )
             # Example filename: CZBIL_2025-05-13.png
-
+            timestamp_str = now.strftime("%Y-%B-%d_%I-%M%p")
             filename = f"{company_symbol}_{timestamp_str()}.png"
 
             # Save the image locally
