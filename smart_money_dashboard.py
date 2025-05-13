@@ -6,6 +6,7 @@ import io
 from datetime import datetime, timedelta
 import pytz
 import kaleido
+import plotly.io as pio
 
 # --- Page Setup ---
 st.set_page_config(page_title="Quantexo", layout="wide")
@@ -370,6 +371,21 @@ if company_symbol:
                 file_name=img_name,
                 mime="image/png"
             )
+            # Example filename: CZBIL_2025-05-13.png
+
+            filename = f"{company_symbol}_{timestamp_str()}.png"
+
+            # Save the image locally
+            pio.write_image(fig, filename, format='png')
+
+            # Display a download button
+            with open(filename, "rb") as file:
+                btn = st.download_button(
+                    label="📥 Download Custom Plot",
+                    data=file,
+                    file_name=filename,
+                    mime="image/png"
+                )
 
             st.subheader(" 🔍📅 Recent 1 Month Signal Observed")
             last_date = df['date'].max()
