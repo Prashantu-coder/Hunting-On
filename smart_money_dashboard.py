@@ -360,31 +360,7 @@ if company_symbol:
             one_month_ago = last_date - timedelta(days=30)
             recent_df = df[(df['date'] >= one_month_ago) & (df['tag'] != '')]
             recent_df['tag_description'] = recent_df['tag'].map(tag_labels)
-            
-            if recent_df.empty:
-                st.info("No signals detected in the last month. Showing the most recent data instead.")
-                # Show the most recent 10 days regardless of signals
-                recent_data = df[df['date'] >= one_month_ago].sort_values('date', ascending=False)
-                st.dataframe(recent_data[['date', 'open', 'high', 'low', 'close', 'point_change', 'volume']].head(10))
-            else:
-                st.dataframe(recent_df[['date', 'open', 'high', 'low', 'close', 'point_change', 'volume', 'tag_description']].sort_values('date', ascending=False))
-
-            output = io.BytesIO()
-            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                recent_df[['date', 'open', 'high', 'low', 'close', 'point_change', 'volume', 'tag_description']].rename(columns={'tag_description':'Signal Description'}).to_excel(writer, index=False, sheet_name=f'Signals Detected for - {company_symbol}')
-            processed_data = output.getvalue()
-
-            nepali_tz = pytz.timezone('Asia/Kathmandu')
-            now = datetime.now(nepali_tz)
-            timestamp_str = now.strftime("%Y-%B-%d_%I-%M%p")
-            file_name = f"1_Months_Signal_{company_symbol}_{timestamp_str}_Quantexo🕵️_NEPSE.xlsx"
-
-            st.download_button(
-                label="📥 Download 1 Month Signals as Excel",
-                data=processed_data,
-                file_name=file_name,
-                mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            )
+        
         else:
             st.warning("⚠️ Unable to calculate trading signals due to insufficient data")
             
