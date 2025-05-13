@@ -307,16 +307,17 @@ if company_symbol:
                     xanchor="center",
                     x=0.5,
                     font=dict(size=14),
-                    bgcolor="rgba(0,0,0,0)"  # Optional: keeps legend background transparent),
+                    bgcolor="rgba(0,0,0,0)"  # Optional: keeps legend background transparent)
+                ),
+                # Add zoom and pan capabilities
+                dragmode="zoom",  # Enable box zoom
+                    modebar=dict(
+                    orientation="v",
+                    bgcolor="rgba(0,0,0,0.2)",
+                    color="white"
                 )
             )
-            # Add zoom and pan capabilities
-            dragmode="zoom",  # Enable box zoom
-            modebar=dict(
-                orientation="v",
-                bgcolor="rgba(0,0,0,0.2)",
-                color="white"
-            )
+            
             # Add latest date highlight
             latest_data = df.iloc[-1]
             fig.add_trace(go.Scatter(
