@@ -6,7 +6,6 @@ import io
 from datetime import datetime, timedelta
 import pytz
 import kaleido
-import plotly.io as pio
 
 # --- Page Setup ---
 st.set_page_config(page_title="Quantexo", layout="wide")
