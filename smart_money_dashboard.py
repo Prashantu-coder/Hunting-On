@@ -181,9 +181,10 @@ if company_symbol:
                     row['volume'] > avg_volume[i] * 1.2 and
                     has_lookahead  # Only check if we have enough future data
                 ):
-                    # Remove only existing ⛔ tags
-                    df.loc[df['tag'] == '⛔', 'tag'] = ''
-
+                    indices = df[df['tag'] == '⛔'].index
+                    if len(indices) > 0:
+                        last_index = indices[-1]
+                        df.loc[indices.difference([last_index]), 'tag'] = ''
                     for j, candle in next_candles.iterrows():
                         if candle['close'] < row['open']:  # Bearish confirmation
                             df.at[j, 'tag'] = '⛔'  # Tag FIRST bearish candle closing below
@@ -341,6 +342,7 @@ if company_symbol:
                 ]
             )
             st.plotly_chart(fig, use_container_width=False)
+                
 
         else:
             st.warning("⚠️ Unable to calculate trading signals due to insufficient data")
