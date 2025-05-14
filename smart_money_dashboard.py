@@ -33,13 +33,26 @@ st.markdown(
 companies = {
 
 }
-col1, col2 = st.columns([1,1,1.2])
+col1, col2, col3 = st.columns([1,1,1.2])
 with col1:
     user_input = st.text_input("🔍 Enter Company Symbol","", label_visibility="collapsed",placeholder="🔍 Enter Company Symbol")
-with col2: search_clicked = st.button("Search")
+with col2: 
+    selected_dropdown = st.selectbox("📋 Or Select from List", [""] + list(companies.keys()))
 
-company_symbol = user_input.strip().upper() if search_clicked else""
+with col3: search_clicked = st.button("Search")
 
+# --- Priority: Manual Entry overrides Dropdown ---
+if search_clicked:
+    if user_input.strip():
+        company_symbol = user_input.strip().upper()
+    elif selected_dropdown:
+        company_symbol = companies.get(selected_dropdown)
+    else:
+        st.warning("⚠️ Please enter or select a company.")
+        company_symbol = ""
+else:
+    company_symbol = ""
+    
 if company_symbol:
     @st.cache_data(ttl=3600)
     def get_sheet_data(symbol, sheet_name="Daily Price"):
