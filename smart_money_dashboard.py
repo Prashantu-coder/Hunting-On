@@ -335,17 +335,9 @@ if company_symbol:
                     line=dict(color='white', width=2),
                     symbol='star'
                 ),
-                hovertemplate=(
-                    "📅 LATEST DATA: %{x|%Y-%m-%d}<br>" +
-                    "💰 Close: %{y:.2f}<extra></extra>"
-                )
             ))
             
             st.plotly_chart(fig, use_container_width=False)
-            
-            # Show last day's data details
-            st.subheader("🔍 Latest Price Data")
-            latest_df = df.iloc[-1:].copy()
             
             # Check if any signal was detected for the latest day
             latest_tag = latest_df['tag'].iloc[0] if not latest_df.empty else ''
