@@ -145,7 +145,7 @@ if company_symbol:
             
             # Modified loop to process all available data including the most recent
             # Important: Changed the range to include all data points
-            for i in range( len(df)):
+            for i in range(min(3, len(df)-1), len(df)):
                 row = df.iloc[i]
                 prev = df.iloc[i - 1]
                 # Define next_candles safely to avoid index errors
