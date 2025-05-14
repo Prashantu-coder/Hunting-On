@@ -34,7 +34,7 @@ companies = {"ACLBSL", "ADBL", "AHL", "AHPC", "AKJCL", "AKPL", "ALBSL", "ALICL",
 }
 col1, col2, col3 = st.columns([1,1,1.2])
 with col1:
-    selected_dropdown = st.selectbox("", "", sorted(list(companies)))
+    selected_dropdown = st.selectbox("", [""], sorted(list(companies)))
 with col2: 
     user_input = st.text_input("🔍 Enter Company Symbol","", label_visibility="collapsed",placeholder="🔍 Enter Company Symbol")
 with col3: search_clicked = st.button("Search")
