@@ -329,11 +329,16 @@ if company_symbol:
                 ),
                 # Add zoom and pan capabilities
                 dragmode="zoom",  # Enable box zoom
-                    modebar=dict(
-                    orientation="v",
-                    bgcolor="rgba(0,0,0,0.2)",
-                    color="white"
-                )
+                annotations=[
+                    dict(
+                        text=f"{company_symbol} - Quantexo",
+                        xref="paper", yref="paper",
+                        x=0.5, y=0.5,
+                        xanchor="center", yanchor="middle",
+                        font=dict(size=60, color="rgba(255, 255, 255, 0.05)"),
+                        showarrow=False
+                    )
+                ]
             )
             
             # Add latest date highlight
