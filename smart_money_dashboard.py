@@ -37,7 +37,7 @@ col1, col2, col3 = st.columns([1,1,1.2])
 with col1:
     user_input = st.text_input("🔍 Enter Company Symbol","", label_visibility="collapsed",placeholder="🔍 Enter Company Symbol")
 with col2: 
-    selected_dropdown = st.selectbox("📋 Or Select from List", [""] + list(companies.keys()))
+    selected_dropdown = st.selectbox("", [""] + list(companies.keys()))
 
 with col3: search_clicked = st.button("Search")
 
@@ -52,7 +52,7 @@ if search_clicked:
         company_symbol = ""
 else:
     company_symbol = ""
-    
+
 if company_symbol:
     @st.cache_data(ttl=3600)
     def get_sheet_data(symbol, sheet_name="Daily Price"):
