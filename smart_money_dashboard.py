@@ -317,11 +317,11 @@ if company_symbol:
                 title=chart_bg,
                 xaxis=dict(title="Date", tickangle=-45, showgrid=False, range=[df['date'].min(),extended_date]), #extend x-axis to show space after latest date
                 yaxis=dict(title="Price", showgrid=False, zeroline=True, zerolinecolor="gray", autorange=True),
-                margin=dict(l=50, r=50, b=150, t=50),
+                margin=dict(l=50, r=50, b=130, t=50),
                 legend=dict(
                     orientation="h",
                     yanchor="top",
-                    y=-0.3,  # Adjust this value to move further down if needed
+                    y=-0.2,  # Adjust this value to move further down if needed
                     xanchor="center",
                     x=0.5,
                     font=dict(size=14),
