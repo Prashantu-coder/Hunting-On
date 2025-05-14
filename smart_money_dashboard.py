@@ -331,11 +331,11 @@ if company_symbol:
                 dragmode="zoom",  # Enable box zoom
                 annotations=[
                     dict(
-                        text=f"{company_symbol} - Quantexo",
+                        text=f"{company_symbol} <br> Quantexo",
                         xref="paper", yref="paper",
                         x=0.5, y=0.5,
                         xanchor="center", yanchor="middle",
-                        font=dict(size=60, color="rgba(255, 255, 255)"),
+                        font=dict(size=60, color="rgba(250, 249, 246)"),
                         showarrow=False
                     )
                 ]
