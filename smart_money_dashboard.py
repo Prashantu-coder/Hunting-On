@@ -335,7 +335,7 @@ if company_symbol:
                         xref="paper", yref="paper",
                         x=0.5, y=0.5,
                         xanchor="center", yanchor="middle",
-                        font=dict(size=60, color="rgba(255, 255, 255, 0.05)"),
+                        font=dict(size=60, color="rgba(255, 255, 255)"),
                         showarrow=False
                     )
                 ]
