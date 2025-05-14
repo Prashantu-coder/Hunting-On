@@ -338,17 +338,7 @@ if company_symbol:
             ))
             
             st.plotly_chart(fig, use_container_width=False)
-            
-            # Check if any signal was detected for the latest day
-            latest_tag = latest_df['tag'].iloc[0] if not latest_df.empty else ''
-            if latest_tag:
-                latest_df['Signal'] = f"{latest_tag} {tag_labels.get(latest_tag, '')}"
-                st.dataframe(latest_df[['date', 'open', 'high', 'low', 'close', 'volume', 'point_change', 'Signal']])
-                st.success(f"🎯 Signal detected on latest day: {tag_labels.get(latest_tag, latest_tag)}")
-            else:
-                st.dataframe(latest_df[['date', 'open', 'high', 'low', 'close', 'volume', 'point_change']])
-                st.info("ℹ️ No signal detected on the latest day based on current patterns")
-        
+
         else:
             st.warning("⚠️ Unable to calculate trading signals due to insufficient data")
             
