@@ -340,22 +340,6 @@ if company_symbol:
                     )
                 ]
             )
-            
-            # Add latest date highlight
-            latest_data = df.iloc[-1]
-            fig.add_trace(go.Scatter(
-                x=[latest_data['date']],
-                y=[latest_data['close']],
-                mode='markers',
-                name='Latest Data',
-                marker=dict(
-                    color='yellow',
-                    size=12,
-                    line=dict(color='white', width=2),
-                    symbol='star'
-                ),
-            ))
-            
             st.plotly_chart(fig, use_container_width=False)
 
         else:
