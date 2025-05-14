@@ -45,7 +45,7 @@ if search_clicked:
     if user_input.strip():
         company_symbol = user_input.strip().upper()
     elif selected_dropdown:
-        company_symbol = companies.get(selected_dropdown)
+        company_symbol = selected_dropdown
     else:
         st.warning("⚠️ Please enter or select a company.")
         company_symbol = ""
