@@ -242,6 +242,7 @@ if company_symbol:
                         row['close'] > row['open'] and
                         row['volume'] > avg_volume[i] * 1.2
                     ):
+                        df.loc[df['tag'] == '⛔', 'tag'] = ''
                         for j, candle in next_candles.iterrows():
                             if candle['close'] < row['open']:
                                 df.at[j, 'tag'] = '⛔'
@@ -251,6 +252,7 @@ if company_symbol:
                         row['open'] > row['close'] and
                         row['volume'] > avg_volume[i] * 1.2
                     ):
+                        df.loc[df['tag'] == '🚀', 'tag'] = ''
                         for j, candle in next_candles.iterrows():
                             if candle['close'] > row['open']:
                                 df.at[j, 'tag'] = '🚀'
