@@ -176,9 +176,7 @@ if company_symbol:
                 elif (
                     i >= 10 and
                     row['high'] > max(df['high'].iloc[i - 10:i]) and
-                    row['close'] < (row['high'] - (row['high'] - row['low']) * 0.3) and
                     row['volume'] > avg_volume[i] * 1.8
-                    (row['high'] - max(row['open'], row['close'])) > (0.4 * (row['high'] - row['low']))
                 ):
                     if not (df['tag'].iloc[i - 3:i] == '💥').any():
                         df.at[i, 'tag'] = '💥'
@@ -186,9 +184,7 @@ if company_symbol:
                 elif (
                     i >= 10 and
                     row['low'] < min(df['low'].iloc[i - 10:i]) and
-                    row['close'] > (row['low'] + (row['high'] - row['low']) * 0.3) and
                     row['volume'] > avg_volume[i] * 1.8
-                    (min(row['open'], row['close']) - row['low']) > (0.4 * (row['high'] - row['low']))
                 ):
                     if not (df['tag'].iloc[i - 3:i] == '💣').any():
                         df.at[i, 'tag'] = '💣'
