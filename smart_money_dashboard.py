@@ -18,12 +18,7 @@ st.markdown(
     """
     <style>
     .stApp {
-        background-color: #1a1a1a;
-    }
-    .stSelectbox, .stTextInput, .stButton>button{
-        background-color: #2d2d2d !important;
-        color: white !important ;
-        border-color: #444 !important;
+        background-color: darkslategray;
     }
     </style>
     <div class='header-container'>
@@ -153,14 +148,15 @@ if company_symbol:
             for i in range(min(3, len(df)-1), len(df)):
                 row = df.iloc[i]
                 prev = df.iloc[i - 1]
+                # Define next_candles safely to avoid index errors
                 next_candles = df.iloc[i + 1:min(i + 6, len(df))]
-                is_last_candle = (i == len(df) - 1)  # Flag for last candle
-
                 body = abs(row['close'] - row['open'])
                 prev_body = abs(prev['close'] - prev['open'])
                 recent_tags = df['tag'].iloc[max(0, i - 4):i]
 
-                # --- Signals that DON'T require future data (always checked) ---
+                # Check if we have enough lookahead data for certain patterns
+                has_lookahead = i < len(df) - 5
+                
                 if (
                     row['close'] > row['open'] and
                     row['close'] >= row['high'] - (row['high'] - row['low']) * 0.1 and
@@ -173,12 +169,39 @@ if company_symbol:
                 elif (
                     row['open'] > row['close'] and
                     row['close'] <= row['low'] + (row['high'] - row['low']) * 0.1 and
-                    row['volume'] > avg_volume[i] * 1.5 and
+                    row['volume'] > avg_volume[i] *1.5 and
                     body > prev_body and
                     '🔴' not in recent_tags.values
                 ):
                     df.at[i, 'tag'] = '🔴'
+                    
+                # For patterns that require lookahead data, only process if we have enough data
+                elif (
+                    row['close'] > row['open'] and
+                    row['volume'] > avg_volume[i] * 1.2 and
+                    has_lookahead  # Only check if we have enough future data
+                ):
+                    # Remove only existing ⛔ tags
+                    df.loc[df['tag'] == '⛔', 'tag'] = ''
 
+                    for j, candle in next_candles.iterrows():
+                        if candle['close'] < row['open']:  # Bearish confirmation
+                            df.at[j, 'tag'] = '⛔'  # Tag FIRST bearish candle closing below
+                            break  # Stop after first occurrence
+                            
+                elif (
+                    row['open'] > row['close'] and
+                    row['volume'] > avg_volume[i] * 1.2 and
+                    has_lookahead  # Only check if we have enough future data
+                ):
+                    # Remove only existing 🚀 tags
+                    df.loc[df['tag'] == '🚀', 'tag'] = ''
+
+                    for j, candle in next_candles.iterrows():  # Check next 5 candles
+                        if candle['close'] > row['open']:  # Price recovers above bearish candle's open
+                            df.at[j, 'tag'] = '🚀'  # Tag the rejection candle
+                            break  # Stop at first confirmation
+                            
                 elif (
                     i >= 10 and
                     row['high'] > max(df['high'].iloc[i - 10:i]) and
@@ -186,7 +209,7 @@ if company_symbol:
                 ):
                     if not (df['tag'].iloc[i - 3:i] == '💥').any():
                         df.at[i, 'tag'] = '💥'
-
+                        
                 elif (
                     i >= 10 and
                     row['low'] < min(df['low'].iloc[i - 10:i]) and
@@ -194,21 +217,21 @@ if company_symbol:
                 ):
                     if not (df['tag'].iloc[i - 3:i] == '💣').any():
                         df.at[i, 'tag'] = '💣'
-
+                        
                 elif (
                     row['close'] > row['open'] and
                     body > (row['high'] - row['low']) * 0.7 and
                     row['volume'] > avg_volume[i] * 2
                 ):
                     df.at[i, 'tag'] = '🐂'
-
+                    
                 elif (
                     row['open'] > row['close'] and
                     body > (row['high'] - row['low']) * 0.7 and
                     row['volume'] > avg_volume[i] * 2
                 ):
                     df.at[i, 'tag'] = '🐻'
-
+                    
                 elif (
                     df['point_change'].iloc[i] > 0 and
                     row['close'] > row['open'] and
@@ -216,7 +239,7 @@ if company_symbol:
                     row['volume'] < avg_volume[i] * 0.5
                 ):
                     df.at[i, 'tag'] = '📉'
-
+                    
                 elif (
                     df['point_change'].iloc[i] < 0 and
                     row['open'] > row['close'] and
@@ -225,43 +248,6 @@ if company_symbol:
                 ):
                     df.at[i, 'tag'] = '📈'
 
-                # --- Signals that normally require future data ---
-                # Modified to work on last candle with adjusted conditions
-                if is_last_candle:
-                    # For ⛔ (Buyer Absorption): Check if last candle is bullish with high volume
-                    if (
-                        row['close'] > row['open'] and
-                        row['volume'] > avg_volume[i] * 1.5
-                    ):
-                        df.at[i, 'tag'] = '⛔ (Potential)'
-
-                    # For 🚀 (Seller Absorption): Check if last candle is bearish with high volume
-                    elif (
-                        row['open'] > row['close'] and
-                        row['volume'] > avg_volume[i] * 1.5
-                    ):
-                        df.at[i, 'tag'] = '🚀 (Potential)'
-                else:
-                    # Original future-dependent logic for non-last candles
-                    if (
-                        row['close'] > row['open'] and
-                        row['volume'] > avg_volume[i] * 1.2
-                    ):
-                        df.loc[df['tag'] == '⛔', 'tag'] = ''
-                        for j, candle in next_candles.iterrows():
-                            if candle['close'] < row['open']:
-                                df.at[j, 'tag'] = '⛔'
-                                break
-
-                    elif (
-                        row['open'] > row['close'] and
-                        row['volume'] > avg_volume[i] * 1.2
-                    ):
-                        df.loc[df['tag'] == '🚀', 'tag'] = ''
-                        for j, candle in next_candles.iterrows():
-                            if candle['close'] > row['open']:
-                                df.at[j, 'tag'] = '🚀'
-                                break
             # --- Visualization ---
             # st.subheader(f"{company_symbol} - Smart Money Line Chart")
 
