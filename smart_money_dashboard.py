@@ -18,7 +18,12 @@ st.markdown(
     """
     <style>
     .stApp {
-        background-color: darkslategray;
+        background-color: #1a1a1a;
+    }
+    .stSelectbox, .stTextInput, .stButton>button{
+        background-color: #2d2d2d !important;
+        color: white !important;
+        border-color: #444 !important;
     }
     </style>
     <div class='header-container'>
