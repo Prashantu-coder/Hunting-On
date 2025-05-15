@@ -22,7 +22,7 @@ st.markdown(
     }
     .stSelectbox, .stTextInput, .stButton>button{
         background-color: #2d2d2d !important;
-        color: white !important;
+        color: white !important ;
         border-color: #444 !important;
     }
     </style>
@@ -134,28 +134,6 @@ if company_symbol:
         df.reset_index(drop=True, inplace=True)
         # ===== END OF ADDED VALIDATION =====
 
-        # Calculate 5 months ago from the last date
-        last_date = df['date'].max()
-        five_months_ago = last_date - pd.DateOffset(months=5)
-        
-        # Create slider for date range selection
-        min_date = df['date'].min().to_pydatetime()
-        max_date = df['date'].max().to_pydatetime()
-        
-        # Default to showing last 5 months initially
-        default_start = max(five_months_ago.to_pydatetime(), min_date)
-        
-        date_range = st.slider(
-            "Select Date Range:",
-            min_value=min_date,
-            max_value=max_date,
-            value=(default_start, max_date),
-            format="YYYY-MM-DD"
-        )
-        
-        # Filter data based on selected date range
-        filtered_df = df[(df['date'] >= date_range[0]) & (df['date'] <= date_range[1])]
-
         df['point_change'] = df['close'].diff().fillna(0)
         df['tag'] = ''
         
@@ -163,24 +141,24 @@ if company_symbol:
         min_window = min(20, max(5, len(df) // 2))  # Use at least 5 days, at most 20, or half the data
         
         # Calculate rolling average with adjusted window size
-        avg_volume = filtered_df['volume'].rolling(window=min_window).mean()
+        avg_volume = df['volume'].rolling(window=min_window).mean()
         
         # Ensure we have some valid rolling average values before proceeding
         if avg_volume.notna().sum() > 0:
             # Fill NaN values with the first valid value
-            avg_volume = avg_volume.fillna(method='bfill').fillna(filtered_df['volume'].mean())
+            avg_volume = avg_volume.fillna(method='bfill').fillna(df['volume'].mean())
             
             # Modified loop to process all available data including the most recent
             # Important: Changed the range to include all data points
-            for i in range(min(3, len(filtered_df)-1), len(filtered_df)):
-                row = filtered_df.iloc[i]
-                prev = filtered_df.iloc[i - 1]
-                next_candles = filtered_df.iloc[i + 1:min(i + 6, len(filtered_df))]
-                is_last_candle = (i == len(filtered_df) - 1)  # Flag for last candle
+            for i in range(min(3, len(df)-1), len(df)):
+                row = df.iloc[i]
+                prev = df.iloc[i - 1]
+                next_candles = df.iloc[i + 1:min(i + 6, len(df))]
+                is_last_candle = (i == len(df) - 1)  # Flag for last candle
 
                 body = abs(row['close'] - row['open'])
                 prev_body = abs(prev['close'] - prev['open'])
-                recent_tags = filtered_df['tag'].iloc[max(0, i - 4):i]
+                recent_tags = df['tag'].iloc[max(0, i - 4):i]
 
                 # --- Signals that DON'T require future data (always checked) ---
                 if (
@@ -190,7 +168,7 @@ if company_symbol:
                     body > prev_body and
                     '🟢' not in recent_tags.values
                 ):
-                    filtered_df.at[i, 'tag'] = '🟢'
+                    df.at[i, 'tag'] = '🟢'
 
                 elif (
                     row['open'] > row['close'] and
@@ -199,53 +177,53 @@ if company_symbol:
                     body > prev_body and
                     '🔴' not in recent_tags.values
                 ):
-                    filtered_df.at[i, 'tag'] = '🔴'
+                    df.at[i, 'tag'] = '🔴'
 
                 elif (
                     i >= 10 and
-                    row['high'] > max(filtered_df['high'].iloc[i - 10:i]) and
+                    row['high'] > max(df['high'].iloc[i - 10:i]) and
                     row['volume'] > avg_volume[i] * 1.8
                 ):
-                    if not (filtered_df['tag'].iloc[i - 3:i] == '💥').any():
-                        filtered_df.at[i, 'tag'] = '💥'
+                    if not (df['tag'].iloc[i - 3:i] == '💥').any():
+                        df.at[i, 'tag'] = '💥'
 
                 elif (
                     i >= 10 and
-                    row['low'] < min(filtered_df['low'].iloc[i - 10:i]) and
+                    row['low'] < min(df['low'].iloc[i - 10:i]) and
                     row['volume'] > avg_volume[i] * 1.8
                 ):
-                    if not (filtered_df['tag'].iloc[i - 3:i] == '💣').any():
-                        filtered_df.at[i, 'tag'] = '💣'
+                    if not (df['tag'].iloc[i - 3:i] == '💣').any():
+                        df.at[i, 'tag'] = '💣'
 
                 elif (
                     row['close'] > row['open'] and
                     body > (row['high'] - row['low']) * 0.7 and
                     row['volume'] > avg_volume[i] * 2
                 ):
-                    filtered_df.at[i, 'tag'] = '🐂'
+                    df.at[i, 'tag'] = '🐂'
 
                 elif (
                     row['open'] > row['close'] and
                     body > (row['high'] - row['low']) * 0.7 and
                     row['volume'] > avg_volume[i] * 2
                 ):
-                    filtered_df.at[i, 'tag'] = '🐻'
+                    df.at[i, 'tag'] = '🐻'
 
                 elif (
-                    filtered_df['point_change'].iloc[i] > 0 and
+                    df['point_change'].iloc[i] > 0 and
                     row['close'] > row['open'] and
                     body < 0.3 * prev_body and
                     row['volume'] < avg_volume[i] * 0.5
                 ):
-                    filtered_df.at[i, 'tag'] = '📉'
+                    df.at[i, 'tag'] = '📉'
 
                 elif (
-                    filtered_df['point_change'].iloc[i] < 0 and
+                    df['point_change'].iloc[i] < 0 and
                     row['open'] > row['close'] and
                     body < 0.3 * prev_body and
                     row['volume'] < avg_volume[i] * 0.5
                 ):
-                    filtered_df.at[i, 'tag'] = '📈'
+                    df.at[i, 'tag'] = '📈'
 
                 # --- Signals that normally require future data ---
                 # Modified to work on last candle with adjusted conditions
@@ -255,37 +233,54 @@ if company_symbol:
                         row['close'] > row['open'] and
                         row['volume'] > avg_volume[i] * 1.5
                     ):
-                        filtered_df.at[i, 'tag'] = '⛔ (Potential)'
+                        df.at[i, 'tag'] = '⛔ (Potential)'
 
                     # For 🚀 (Seller Absorption): Check if last candle is bearish with high volume
                     elif (
                         row['open'] > row['close'] and
                         row['volume'] > avg_volume[i] * 1.5
                     ):
-                        filtered_df.at[i, 'tag'] = '🚀 (Potential)'
+                        df.at[i, 'tag'] = '🚀 (Potential)'
                 else:
                     # Original future-dependent logic for non-last candles
                     if (
                         row['close'] > row['open'] and
                         row['volume'] > avg_volume[i] * 1.2
                     ):
-                        filtered_df.loc[filtered_df['tag'] == '⛔', 'tag'] = ''
+                        df.loc[df['tag'] == '⛔', 'tag'] = ''
                         for j, candle in next_candles.iterrows():
                             if candle['close'] < row['open']:
-                                filtered_df.at[j, 'tag'] = '⛔'
+                                df.at[j, 'tag'] = '⛔'
                                 break
 
                     elif (
                         row['open'] > row['close'] and
                         row['volume'] > avg_volume[i] * 1.2
                     ):
-                        filtered_df.loc[filtered_df['tag'] == '🚀', 'tag'] = ''
+                        df.loc[df['tag'] == '🚀', 'tag'] = ''
                         for j, candle in next_candles.iterrows():
                             if candle['close'] > row['open']:
-                                filtered_df.at[j, 'tag'] = '🚀'
+                                df.at[j, 'tag'] = '🚀'
                                 break
             # --- Visualization ---
             # st.subheader(f"{company_symbol} - Smart Money Line Chart")
+
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(
+                x=df['date'], y=df['close'],
+                mode='lines', name='Close Price',
+                line=dict(color='lightblue', width=2),
+                customdata=df[['date', 'open', 'high', 'low', 'close', 'point_change']],
+                hovertemplate=(
+                    "📅 Date: %{customdata[0]|%Y-%m-%d}<br>" +
+                    "🟢 Open: %{customdata[1]:.2f}<br>" +
+                    "📈 High: %{customdata[2]:.2f}<br>" +
+                    "📉 Low: %{customdata[3]:.2f}<br>" +
+                    "💰 LTP: %{customdata[4]:.2f}<br>" +
+                    "📊 Point Change: %{customdata[5]:.2f}<extra></extra>"
+                )
+            ))  
+
 
             tag_labels = {
                 '🟢': '🟢 Aggressive Buyers',
@@ -299,23 +294,8 @@ if company_symbol:
                 '📉': '📉 Bullish Weak Legs',
                 '📈': '📈 Bearish Weak Legs'
             }
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(
-                x=filtered_df['date'], y=filtered_df['close'],
-                mode='lines', name='Close Price',
-                line=dict(color='#4CAF50', width=2),
-                customdata=filtered_df[['date', 'open', 'high', 'low', 'close', 'point_change']],
-                hovertemplate=(
-                    "📅 Date: %{customdata[0]|%Y-%m-%d}<br>" +
-                    "🟢 Open: %{customdata[1]:.2f}<br>" +
-                    "📈 High: %{customdata[2]:.2f}<br>" +
-                    "📉 Low: %{customdata[3]:.2f}<br>" +
-                    "💰 LTP: %{customdata[4]:.2f}<br>" +
-                    "📊 Point Change: %{customdata[5]:.2f}<extra></extra>"
-                )
-            ))  
 
-            signals = filtered_df[filtered_df['tag'] != '']
+            signals = df[df['tag'] != '']
             for tag in signals['tag'].unique():
                 subset = signals[signals['tag'] == tag]
                 fig.add_trace(go.Scatter(
@@ -339,17 +319,17 @@ if company_symbol:
                 ))
                 
             # Calculate 15 days ahead of the last date
-            last_date = filtered_df['date'].max()
+            last_date = df['date'].max()
             extended_date = last_date + timedelta(days=15)
             chart_bg = f""
             fig.update_layout(
                 height=800,
                 width=1800,
-                plot_bgcolor="#2d2d2d",
-                paper_bgcolor="#1a1a1a",
+                plot_bgcolor="darkslategray",
+                paper_bgcolor="darkslategray",
                 font_color="white",
                 title=chart_bg,
-                xaxis=dict(title="Date", tickangle=-45, showgrid=False, range=[filtered_df['date'].min(),extended_date]), #extend x-axis to show space after latest date
+                xaxis=dict(title="Date", tickangle=-45, showgrid=False, range=[df['date'].min(),extended_date]), #extend x-axis to show space after latest date
                 yaxis=dict(title="Price", showgrid=False, zeroline=True, zerolinecolor="gray", autorange=True),
                 margin=dict(l=50, r=50, b=130, t=50),
                 legend=dict(
