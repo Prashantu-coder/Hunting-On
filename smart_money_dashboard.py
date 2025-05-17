@@ -67,7 +67,18 @@ with col3:
         placeholder= "🔍 Enter Company Symbol"
     )
     search_clicked = st.button("Search")
-
+# --- Priority: Manual Entry Overries Dropdown ---
+if search_clicked:
+    if user_input.strip():
+        company_symbol = user_input.strip().upper()
+    elif selected_dropdown:
+        company_symbol = selected_dropdown
+    else:
+        st.warning("⚠️ Please enter or select a company.")
+        company_symbol = ""
+else:
+    company_symbol = ""
+    
 if company_symbol:
     @st.cache_data(ttl=3600)
     def get_sheet_data(symbol, sheet_name="Daily Price"):
