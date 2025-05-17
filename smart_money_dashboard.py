@@ -25,30 +25,20 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- Company Search ---
-
-companies = {"ACLBSL", "ADBL", "AHL", "AHPC", "AKJCL", "AKPL", "ALBSL", "ALICL", "ANLB", "API", "AVYAN", "BARUN", "BBC", "BEDC", "BFC", "BGWT", "BHDC", "BHL", "BHPL", "BNHC", "BNL", "BNT", "BPCL", "C30MF", "CBBL", "CCBD88", "CFCL", "CGH", "CHCL", "CHDC", "CHL", "CIT", "CITY", "CIZBD90", "CKHL", "CLI", "CMF2", "CORBL", "CREST", "CYCL", "CZBIL", "DDBL", "DHPL", "DLBS", "DOLTI", "DORDI", "EBL", "EBLD85", "EBLD86", "EDBL", "EHPL", "ENL", "FMDBL", "FOWAD", "GBBD85", "GBBL", "GBILD84/85", "GBILD86/87", "GBIME", "GBLBS", "GCIL", "GFCL", "GHL", "GIBF1", "GILB", "GLBSL", "GLH", "GMFBS", "GMFIL", "GMLI", "GRDBL", "GSY", "GUFL", "GVL", "GWFD83", "H8020", "HATHY", "HBL", "HDHPC", "HDL", "HEI", "HEIP", "HHL", "HIDCL", "HIDCLP", "HLBSL", "HLI", "HPPL", "HRL", "HURJA", "ICFC", "ICFCD83", "ICFCD88", "IGI", "IHL", "ILBS", "ILI", "JBBD87", "JBBL", "JBBLPO", "JBLB", "JFL", "JOSHI", "JSLBB", "KBL", "KBLD86", "KBSH", "KDBY", "KDL", "KEF", "KKHC", "KMCDB", "KPCL", "KSBBL", "KSBBLD87", "KSY", "LBBL", "LEC", "LICN", "LLBS", "LSL", "LUK", "LVF2", "MAKAR", "MANDU", "MATRI", "MBJC", "MBL", "MBLD87", "MCHL", "MDB", "MEHL", "MEL", "MEN", "MERO", "MFIL", "MFLD85", "MHCL", "MHL", "MHNL", "MKCL", "MKHC", "MKHL", "MKJC", "MLBBL", "MLBL", "MLBS", "MLBSL", "MMF1", "MMKJL", "MNBBL", "MNMF1", "MPFL", "MSHL", "MSLB", "NABBC", "NABIL", "NABILD87", "NADEP", "NBBD2085", "NBF2", "NBF3", "NBL", "NBLD85", "NBLD87", "NESDO", "NFS", "NGPL", "NHDL", "NHPC", "NIBD2082", "NIBD84", "NIBLGF", "NIBLSTF", "NIBSF2", "NICA", "NICBF", "NICD88", "NICFC", "NICGF2", "NICL", "NICLBSL", "NICSF", "NIFRA", "NIFRAUR85/86", "NIL", "NIMB", "NIMBPO", "NLG", "NLIC", "NLICL", "NMB", "NMB50", "NMBHF2", "NMBMF", "NMFBS", "NMIC", "NMLBBL", "NRIC", "NRM", "NRN", "NSIF2", "NTC", "NUBL", "NWCL", "NYADI", "OHL", "OMPL", "PBD84", "PBD88", "PCBL", "PFL", "PHCL", "PMHPL", "PMLI", "PPCL", "PPL", "PRIN", "PROFL", "PRSF", "PRVU", "PSF", "RADHI", "RAWA", "RBCL", "RBCLPO", "RFPL", "RHGCL", "RHPL", "RIDI", "RLFL", "RMF1", "RMF2", "RNLI", "RSDC", "RURU", "SADBL", "SAGF", "SAHAS", "SALICO", "SAMAJ", "SAND2085", "SANIMA", "SAPDBL", "SARBTM", "SBCF", "SBD87", "SBI", "SBID83", "SBID89", "SBL", "SCB", "SEF", "SFCL", "SFEF", "SFMF", "SGHC", "SGIC", "SHEL", "SHINE", "SHIVM", "SHL", "SHLB", "SHPC", "SICL", "SIFC", "SIGS3", "SIKLES", "SINDU", "SJCL", "SJLIC", "SKBBL", "SLBBL", "SLBSL", "SLCF", "SMATA", "SMB", "SMFBS", "SMH", "SMHL", "SMJC", "SMPDA", "SNLI", "SONA", "SPC", "SPDL", "SPHL", "SPIL", "SPL", "SRLI", "SSHL", "STC", "SWBBL", "SWMF", "TAMOR", "TPC", "TRH", "TSHL", "TVCL", "UAIL", "UHEWA", "ULBSL", "ULHC", "UMHL", "UMRH", "UNHPL", "UNLB", "UPCL", "UPPER", "USHEC", "USHL", "USLB", "VLBS", "VLUCL", "WNLB"
+sector_to_companies ={
+    "Commercial Banks": {"ADBL","CZBIL","EBL","GBIME","HBL","KBL","LSL","MBL","NABIL","NBL","NICA","NIMB","NMB","PCBL","PRVU","SANIMA","SBI","SBL","SCB"},
+    "Development Banks": {"CORBL","EDBL","GBBL","GRDBL","JBBL","KSBBL","LBBL","MDB","MLBL","MNBBL","NABBC","SADBL","SAPDBL","SHINE","SINDU"},
+    "Finance": {"BFC","CFCL","GFCL","GMFIL","GUFL","ICFC","JFL","MFIL","MPFL","NFS","PFL","PROFL","RLFL","SFCL","SIFC"},
+    "Hotels": {"CGH","CITY","KDL","OHL","SHL","TRH"},
+    "Hydro Power": {"AHPC", "AHL", "AKJCL", "AKPL", "API", "BARUN", "BEDC", "BHDC", "BHPL", "BGWT", "BHL", "BNHC", "BPCL", "CHCL", "CHL", "CKHL", "DHPL", "DOLTI", "DORDI", "EHPL", "GHL", "GLH", "GVL", "HDHPC", "HHL", "HPPL", "HURJA", "IHL", "JOSHI", "KKHC", "KPCL", "KBSH", "LEC", "MAKAR", "MANDU", "MBJC", "MEHL", "MEL", "MEN", "MHCL", "MHNL", "MKHC", "MKHL", "MKJC", "MMKJL", "MHL", "MCHL", "MSHL", "NGPL", "NHDL", "NHPC", "NYADI", "PPL", "PHCL", "PMHPL", "PPCL", "RADHI", "RAWA", "RHGCL", "RFPL", "RIDI", "RHPL", "RURU", "SAHAS", "SHEL", "SGHC", "SHPC", "SIKLES", "SJCL", "SMH", "SMHL", "SMJC", "SPC", "SPDL", "SPHL", "SPL", "SSHL", "TAMOR", "TPC", "TSHL", "TVCL", "UHEWA", "ULHC", "UMHL", "UMRH", "UNHPL", "UPCL", "UPPER", "USHL", "USHEC", "VLUCL"},
+    "Investment": {"CHDC","CIT","ENL","HATHY","HIDCL","NIFRA","NRN"},
+    "Life Insurance":{"ALICL","CLI","CREST","GMLI","HLI","ILI","LICN","NLIC","NLICL","PMLI","RNLI","SJLIC","SNLI","SRLI"},
+    "Manufacturing and Processing": {"BNL","BNT","GCIL","HDL","NLO","OMPL","SARBTM","SHIVM","SONA","UNL"},
+    "Microfinance": {"ACLBSL","ALBSL","ANLB","AVYAN","CBBL","CYCL","DDBL","DLBS","FMDBL","FOWAD","GBLBS","GILB","GLBSL","GMFBS","HLBSL","ILBS","JBLB","JSLBB","KMCDB","LLBS","MATRI","MERO","MLBBL","MLBS","MLBSL","MSLB","NADEP","NESDO","NICLBSL","NMBMF","NMFBS","NMLBBL","NUBL","RSDC","SAMAJ","SHLB","SKBBL","SLBBL","SLBSL","SMATA","SMB","SMFBS","SMPDA","SWBBL","SWMF","ULBSL","UNLB","USLB","VLBS","WNLB"},
+    "Non Life Insurance": {"HEI","IGI","NICL","NIL","NLG","NMIC","PRIN","RBCL","SALICO","SGIC"},
+    "Others": {"HRL","MKCL","NRIC","NRM","NTC","NWCL"},
+    "Trading": {"BBC","STC"}
 }
-col1, col2, col3 = st.columns([1,1,1.2])
-with col1:
-    selected_dropdown = st.selectbox("",options=[""] + sorted(list(companies)), index=0, label_visibility="collapsed")
-with col2:
-    user_input = st.text_input("🔍 Enter Company Symbol","", label_visibility="collapsed",placeholder="🔍 Enter Company Symbol")
-with col3: 
-    search_clicked = st.button("Search")
-
-# --- Priority: Manual Entry overrides Dropdown ---
-
-if search_clicked:
-    if user_input.strip():
-        company_symbol = user_input.strip().upper()
-    elif selected_dropdown:
-        company_symbol = selected_dropdown
-    else:
-        st.warning("⚠️ Please enter or select a company.")
-        company_symbol = ""
-else:
-    company_symbol = ""
 
 if company_symbol:
     @st.cache_data(ttl=3600)
