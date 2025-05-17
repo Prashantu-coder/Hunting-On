@@ -69,6 +69,7 @@ with col3:
 with col4:
     st.write("")
     search_clicked = st.button("Search")
+    label_visibility= "collapsed"
 # --- Priority: Manual Entry Overries Dropdown ---
 if search_clicked:
     if user_input.strip():
