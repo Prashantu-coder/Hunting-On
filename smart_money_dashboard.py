@@ -58,6 +58,15 @@ with col2:
         index=0,
         label_visibility= "collapsed"
     )
+# ---Manual Input---
+with col3:
+    user_input = st.text_input(
+        "🔍 Enter Company Symbol",
+        "",
+        label_visibility= "collapsed",
+        placeholder= "🔍 Enter Company Symbol"
+    )
+    search_clicked = st.button("Search")
 
 if company_symbol:
     @st.cache_data(ttl=3600)
