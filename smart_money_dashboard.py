@@ -40,11 +40,11 @@ sector_to_companies ={
     "Trading": {"BBC","STC"}
 }
 #---UI LAYOUT---
-col1, col2, col3 =st.columns([0.8,0.8,0.8])
+col1, col2, col3, col4 =st.columns([0.8,0.8,0.8,0.8])
 
 # --- Sector Selection ---
 with col1:
-    selected_sector = st.selectbox("Select Sector",placeholder="Select Sector",options=[""]+ list(sector_to_companies.keys()))
+    selected_sector = st.selectbox("Select Sector",placeholder="Select Sector",options=[""]+ list(sector_to_companies.keys()),label_visibility= "collapsed")
 # ---Filter Companies based on Sector ---
 with col2:
     if selected_sector:
@@ -56,15 +56,18 @@ with col2:
         "Select Company",
         options=[""]+ filered_companies,
         index=0,
+        label_visibility= "collapsed"
     )
 # ---Manual Input---
 with col3:
     user_input = st.text_input(
         "🔍 Enter Company Symbol",
         "",
-        
+        label_visibility= "collapsed",
         placeholder= "🔍 Enter Company Symbol"
     )
+with col4:
+    st.write("")
     search_clicked = st.button("Search")
 # --- Priority: Manual Entry Overries Dropdown ---
 if search_clicked:
