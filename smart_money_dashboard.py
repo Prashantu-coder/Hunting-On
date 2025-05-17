@@ -24,7 +24,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
+# --- SECTOR TO COMPANY MAPPING ---
 sector_to_companies ={
     "Commercial Banks": {"ADBL","CZBIL","EBL","GBIME","HBL","KBL","LSL","MBL","NABIL","NBL","NICA","NIMB","NMB","PCBL","PRVU","SANIMA","SBI","SBL","SCB"},
     "Development Banks": {"CORBL","EDBL","GBBL","GRDBL","JBBL","KSBBL","LBBL","MDB","MLBL","MNBBL","NABBC","SADBL","SAPDBL","SHINE","SINDU"},
@@ -39,6 +39,9 @@ sector_to_companies ={
     "Others": {"HRL","MKCL","NRIC","NRM","NTC","NWCL"},
     "Trading": {"BBC","STC"}
 }
+#---UI LAYOUT---
+col1, col2, col3 =st.columns([1,1,1.2])
+
 
 if company_symbol:
     @st.cache_data(ttl=3600)
