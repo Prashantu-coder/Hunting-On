@@ -253,7 +253,8 @@ if company_symbol:
 
                 elif (
                     row['close'] > row['open'] and
-                    row['volume'] > avg_volume[i] * 1.2
+                    row['volume'] > avg_volume[i] * 1.2 and
+                    '⛔' not in df['tag'].values
                 ):
                     df.loc[df['tag'] == '⛔', 'tag'] = ''
                     for j, candle in next_candles.iterrows():
