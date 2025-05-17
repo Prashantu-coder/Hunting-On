@@ -42,6 +42,9 @@ sector_to_companies ={
 #---UI LAYOUT---
 col1, col2, col3 =st.columns([1,1,1.2])
 
+# --- Sector Selection ---
+with col1:
+    selected_sector = st.selectbox("Select Sector",options=[""]+list(sector_to_companies.key()))
 
 if company_symbol:
     @st.cache_data(ttl=3600)
