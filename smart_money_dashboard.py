@@ -56,7 +56,8 @@ with col2:
         "Select Company",
         options=[""]+ filered_companies,
         index=0,
-        label_visibility= "collapsed"
+        label_visibility= "collapsed",
+        key="company"
     )
 # ---Manual Input---
 with col3:
