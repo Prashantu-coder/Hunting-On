@@ -45,6 +45,19 @@ col1, col2, col3 =st.columns([1,1,1.2])
 # --- Sector Selection ---
 with col1:
     selected_sector = st.selectbox("Select Sector",options=[""]+list(sector_to_companies.key()))
+# ---Filter Companies based on Sector ---
+with col2:
+    if selected_sector:
+        filered_companies = sorted(sector_to_companies[selected_sector])
+    else:
+        filered_companies =[]
+    
+    selected_dropdown = st.selectbox(
+        "Select Company",
+        options=[""]+ filered_companies,
+        index=0,
+        label_visibility= "collapsed"
+    )
 
 if company_symbol:
     @st.cache_data(ttl=3600)
