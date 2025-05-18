@@ -67,7 +67,6 @@ with col3:
         placeholder= "🔍 Enter Symbol"
     )
 with col4:
-    st.write("")
     search_clicked = st.button("Search")
     label_visibility= "collapsed"
 # --- Priority: Manual Entry Overries Dropdown ---
