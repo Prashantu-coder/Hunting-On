@@ -69,305 +69,198 @@ with col3:
 with col4:
     search_clicked = st.button("Search")
     label_visibility= "collapsed"
-# --- Priority: Manual Entry Overries Dropdown ---
+company_symbol = ""
 if search_clicked:
-    if user_input.strip():
-        company_symbol = user_input.strip().upper()
-    elif selected_dropdown:
-        company_symbol = selected_dropdown
-    else:
+    company_symbol = (user_input or selected_dropdown).strip().upper()
+    if not company_symbol:
         st.warning("⚠️ Please enter or select a company.")
-        company_symbol = ""
-else:
-    company_symbol = ""
     
+# ────────────────────────────────── Data Helpers ──────────────────────────────────────
+
+def get_sheet_gid(sheet_name: str) -> int:
+    return {"Daily Price": 0}.get(sheet_name, 0)
+
+@st.cache_data(ttl=3600)
+def get_sheet_data(symbol: str, sheet_name: str = "Daily Price") -> pd.DataFrame:
+    url = f"https://docs.google.com/spreadsheets/d/1Q_En7VGGfifDmn5xuiF-t_02doPpwl4PLzxb4TBCW0Q/export?format=csv&gid={get_sheet_gid(sheet_name)}"
+    df = pd.read_csv(url).iloc[:, :7]
+    df.columns = ['date', 'symbol', 'open', 'high', 'low', 'close', 'volume']
+    return df[df['symbol'].str.strip().str.upper() == symbol]
+
+# ───────────────────────────────── Weak‑Leg Logic ────────────────────────────────────
+
+def add_weak_leg(df: pd.DataFrame, rs_thr: float = 0.6, rv_thr: float = 1.25, win: int = 20) -> pd.DataFrame:
+    rng = (df['high'] - df['low']).replace(0, pd.NA)
+    df['RS'] = (df['close'] - df['open']) / rng
+    df['RV'] = df['volume'] / df['volume'].rolling(win).mean()
+    bull = (df['RS'] >  rs_thr) & (df['RV'] >= rv_thr)
+    bear = (df['RS'] < -rs_thr) & (df['RV'] >= rv_thr)
+    df['weak_dir'] = 0
+    df.loc[bull, 'weak_dir'] = 1
+    df.loc[bear, 'weak_dir'] = -1
+    return df
+
 if company_symbol:
-    @st.cache_data(ttl=3600)
-    def get_sheet_data(symbol, sheet_name="Daily Price"):
-        try:
-            # Google Sheets URL with the specific sheet's gid
-            sheet_url = f"https://docs.google.com/spreadsheets/d/1Q_En7VGGfifDmn5xuiF-t_02doPpwl4PLzxb4TBCW0Q/export?format=csv&gid={get_sheet_gid(sheet_name)}"
-
-            # Read data as CSV directly (no auth needed if public)
-            df = pd.read_csv(sheet_url)
-
-            # Ensure only the first 7 columns are used (ignoring any additional columns)
-            df = df.iloc[:, :7]  # Select only the first 7 columns
-
-            # Define the columns based on the new column mappings
-            df.columns = ['date', 'symbol', 'open', 'high', 'low', 'close', 'volume']
-
-            # Filter data based on company symbol
-            df['symbol'] = df['symbol'].astype(str).str.strip().str.upper()
-            return df[df['symbol'].str.upper() == symbol.upper()]
-        except Exception as e:
-            st.error(f"🔴 Error fetching data: {str(e)}")
-            return pd.DataFrame()
-
-    def get_sheet_gid(sheet_name):
-        # You need to know the gid value of the sheet, or you can find it in the sheet's URL when editing the sheet
-        sheet_gids = {
-            "Daily Price": 0,  # Default sheet (GID of Sheet1)
-            # Add more sheets here with their respective GIDs
-        }
-        return sheet_gids.get(sheet_name, 0)  # Default to GID 0 if sheet_name not found
-
-    sheet_name = "Daily Price"
-    df = get_sheet_data(company_symbol, sheet_name)
-
+    df =get_sheet_data(company_symbol)
     if df.empty:
         st.warning(f"No data found for {company_symbol}")
         st.stop()
+    
+    #Validation
+    df.columns=[c.lower() for c in df.columns]
+    df['date']=pd.to_datetime(df['date'],errors='coerce')
+    df.dropna(subset=['date'],inplace=True)
+    for c in ['open','high','low','close','volume']:
+        df[c]=pd.to_numeric(df[c],errors='coerce')
+    df.dropna(inplace=True)
+    df.sort_values('date',inplace=True)
+    df.reset_index(drop=True,inplace=True)
 
-    try:
-        # Convert column names to lowercase
-        df.columns = [col.lower() for col in df.columns]
+    df['point_change'] = df['close'].diff().fillna(0)
 
-        # Check required columns
-        required_cols = {'date', 'open', 'high', 'low', 'close', 'volume'}
-        if not required_cols.issubset(set(df.columns)):
-            st.error("❌ Missing required columns: date, open, high, low, close, volume")
-            st.stop()
+    df=add_weak_leg(df)
 
-        # Convert and validate dates
-        df['date'] = pd.to_datetime(df['date'], errors='coerce')
-        if df['date'].isnull().any():
-            st.error("❌ Invalid date format in some rows")
-            st.stop()
+    min_window = min(20, max(5, len(df)//2))
+    avg_volume = df['volume'].rolling(min_window).mean().fillna(method='bfill').fillna(df['volume'].mean())
 
-        # Validate numeric columns
-        numeric_cols = ['open', 'high', 'low', 'close', 'volume']
-        for col in numeric_cols:
-            df[col] = pd.to_numeric(
-                df[col].astype(str).str.replace('[^\d.]', '', regex=True),  # Remove non-numeric chars
-                errors='coerce'
+    df['tag'] = ''
+
+    for i in range(min(3, len(df)-1), len(df)):
+        row = df.iloc[i]
+        prev = df.iloc[i - 1]
+        body = abs(row['close'] - row['open'])
+        prev_body = abs(prev['close'] - prev['open'])
+        rng = row['high']-row['low']
+        recent = df['tag'].iloc[max(0, i - 4):i]
+        next_candles = df.iloc[i + 1:min(i + 6, len(df))]
+
+        # ⏳ Weak-Leg
+        if row['weak_dir']!=0:
+            df.at[i,'tag']='⏳'
+            continue
+
+        # 🟢 Aggressive Buyers
+        if (row['close']>row['open'] and row['close']>=row['high']-0.1*rng and row['volume']>avg_volume[i]*1.5 and body>prev_body and '🟢' not in recent.values):
+            df.at[i,'tag']='🟢'
+            continue
+
+        # 🔴 Aggressive Sellers
+        if (row['open']>row['close'] and row['close']<=row['low']+0.1*rng and row['volume']>avg_volume[i]*1.5 and body>prev_body and '🔴' not in recent.values):
+            df.at[i,'tag']='🔴'
+            continue
+
+        # 💥 Bullish POR
+        if (i>=10 and row['high']>max(df['high'].iloc[i-10:i]) and row['volume']>avg_volume[i]*1.8 and not (df['tag'].iloc[i-8:i]=='💥').any()):
+            df.at[i,'tag']='💥'
+            continue
+
+        # 💣 Bearish POR
+        if (i>=10 and row['low']<min(df['low'].iloc[i-10:i]) and row['volume']>avg_volume[i]*1.8 and not (df['tag'].iloc[i-8:i]=='💣').any()):
+            df.at[i,'tag']='💣'
+            continue
+
+        # 🐂 Bullish POI
+        if (row['close']>row['open'] and body>0.7*rng and row['volume']>avg_volume[i]*2):
+            df.at[i,'tag']='🐂'
+            continue
+
+        # 🐻 Bearish POI
+        if (row['open']>row['close'] and body>0.7*rng and row['volume']>avg_volume[i]*2):
+            df.at[i,'tag']='🐻'
+            continue    
+
+        # 🐂 Bullish POI
+        if (row['close']>row['open'] and body>0.7*rng and row['volume']>avg_volume[i]*2):
+            df.at[i,'tag']='🐂'
+            continue
+
+        # 🐻 Bearish POI
+        if (row['open']>row['close'] and body>0.7*rng and row['volume']>avg_volume[i]*2):
+            df.at[i,'tag']='🐻'
+            continue
+
+        # ⛔ Buyer Absorption
+        if (row['close']>row['open'] and row['volume']>avg_volume[i]*1.2):
+            for j,c in next_candles.iterrows():
+                if c['close']<row['open']:
+                    df.at[j,'tag']='⛔'; break
+
+        # 🚀 Seller Absorption
+        if (row['open']>row['close'] and row['volume']>avg_volume[i]*1.2):
+            for j,c in next_candles.iterrows():
+                if c['close']>row['open']:
+                    df.at[j,'tag']='🚀'; break
+
+     # ─────────────────────────────── Plotting ───────────────────────────────
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=df['date'], y=df['close'],
+            mode='lines', name='Close Price',
+            line=dict(color='lightblue', width=2),
+            customdata=df[['date', 'open', 'high', 'low', 'close', 'point_change']],
+            hovertemplate=(
+                "📅 Date: %{customdata[0]|%Y-%m-%d}<br>" +
+                "🟢 Open: %{customdata[1]:.2f}<br>" +
+                "📈 High: %{customdata[2]:.2f}<br>" +
+                "📉 Low: %{customdata[3]:.2f}<br>" +
+                "💰 LTP: %{customdata[4]:.2f}<br>" +
+                "📊 Point Change: %{customdata[5]:.2f}<extra></extra>"
             )
-            if df[col].isnull().any():
-                bad_rows = df[df[col].isnull()][['date', col]].head()
-                st.error(f"❌ Found {df[col].isnull().sum()} invalid values in {col} column. Examples:")
-                st.dataframe(bad_rows)
-                st.stop()
-
-        # Remove any rows with NA values
-        df = df.dropna()
-        if len(df) == 0:
-            st.error("❌ No valid data after cleaning")
-            st.stop()
-
-        # Sort and reset index
-        df.sort_values('date', inplace=True)
-        df.reset_index(drop=True, inplace=True)
-        # ===== END OF ADDED VALIDATION =====
-
-        df['point_change'] = df['close'].diff().fillna(0)
-        df['tag'] = ''
-        
-        # Dynamically adjust the rolling window size based on available data
-        min_window = min(20, max(5, len(df) // 2))  # Use at least 5 days, at most 20, or half the data
-        
-        # Calculate rolling average with adjusted window size
-        avg_volume = df['volume'].rolling(window=min_window).mean()
-        
-        # Ensure we have some valid rolling average values before proceeding
-        if avg_volume.notna().sum() > 0:
-            # Fill NaN values with the first valid value
-            avg_volume = avg_volume.fillna(method='bfill').fillna(df['volume'].mean())
-            
-            # Modified loop to process all available data including the most recent
-            # Important: Changed the range to include all data points
-            for i in range(min(3, len(df)-1), len(df)):
-                row = df.iloc[i]
-                prev = df.iloc[i - 1]
-                next_candles = df.iloc[i + 1:min(i + 6, len(df))]
-                is_last_candle = (i == len(df) - 1)  # Flag for last candle
-
-                body = abs(row['close'] - row['open'])
-                prev_body = abs(prev['close'] - prev['open'])
-                recent_tags = df['tag'].iloc[max(0, i - 4):i]
-
-                # --- Signals that DON'T require future data (always checked) ---
-                if (
-                    row['close'] > row['open'] and
-                    row['close'] >= row['high'] - (row['high'] - row['low']) * 0.1 and
-                    row['volume'] > avg_volume[i] * 1.5 and
-                    body > prev_body and
-                    '🟢' not in recent_tags.values
-                ):
-                    df.at[i, 'tag'] = '🟢'
-
-                elif (
-                    row['open'] > row['close'] and
-                    row['close'] <= row['low'] + (row['high'] - row['low']) * 0.1 and
-                    row['volume'] > avg_volume[i] * 1.5 and
-                    body > prev_body and
-                    '🔴' not in recent_tags.values
-                ):
-                    df.at[i, 'tag'] = '🔴'
-
-                elif (
-                    i >= 10 and
-                    row['high'] > max(df['high'].iloc[i - 10:i]) and
-                    row['volume'] > avg_volume[i] * 1.8
-                ):
-                    if not (df['tag'].iloc[i - 8:i] == '💥').any():
-                        df.at[i, 'tag'] = '💥'
-
-                elif (
-                    i >= 10 and
-                    row['low'] < min(df['low'].iloc[i - 10:i]) and
-                    row['volume'] > avg_volume[i] * 1.8
-                ):
-                    if not (df['tag'].iloc[i - 8:i] == '💣').any():
-                        df.at[i, 'tag'] = '💣'
-
-                elif (
-                    row['close'] > row['open'] and
-                    body > (row['high'] - row['low']) * 0.7 and
-                    row['volume'] > avg_volume[i] * 2
-                ):
-                    df.at[i, 'tag'] = '🐂'
-
-                elif (
-                    row['open'] > row['close'] and
-                    body > (row['high'] - row['low']) * 0.7 and
-                    row['volume'] > avg_volume[i] * 2
-                ):
-                    df.at[i, 'tag'] = '🐻'
-
-                elif (
-                    df['point_change'].iloc[i] > 0 and
-                    row['close'] > row['open'] and
-                    body < 0.3 * prev_body and
-                    row['volume'] < avg_volume[i] * 0.5
-                ):
-                    df.at[i, 'tag'] = '📉'
-
-                elif (
-                    df['point_change'].iloc[i] < 0 and
-                    row['open'] > row['close'] and
-                    body < 0.3 * prev_body and
-                    row['volume'] < avg_volume[i] * 0.5
-                ):
-                    df.at[i, 'tag'] = '📈'
-
-                elif (
-                    row['close'] > row['open'] and
-                    row['volume'] > avg_volume[i] * 1.2
-                ):
-                    df.loc[df['tag'] == '⛔', 'tag'] = ''
-                    for j, candle in next_candles.iterrows():
-                        if candle['close'] < row['open']:
-                            df.at[j, 'tag'] = '⛔'
-                            break
-                elif (
-                    row['open'] > row['close'] and
-                    row['volume'] > avg_volume[i] * 1.2
-                ):
-                    df.loc[df['tag'] == '🚀', 'tag'] = ''
-                    for j, candle in next_candles.iterrows():
-                        if candle['close'] > row['open']:
-                            df.at[j, 'tag'] = '🚀'
-                            break
-            # --- Visualization ---
-            # st.subheader(f"{company_symbol} - Smart Money Line Chart")
-
-            fig = go.Figure()
+        ))  
+        tag_labels = {
+            '🟢': '🟢 Aggressive Buyers',
+            '🔴': '🔴 Aggressive Sellers',
+            '⛔': '⛔ Buyer Absorption',
+            '🚀': '🚀 Seller Absorption',
+            '💥': '💥 Bullish POR',
+            '💣': '💣 Bearish POR',
+            '🐂': '🐂 Bullish POI',
+            '🐻': '🐻 Bearish POI',
+            '⏳':'⏳ Weak‑Leg'
+        }
+        signals = df[df['tag'] != '']
+        for tag in signals['tag'].unique():
+            subset = signals[signals['tag'] == tag]
+            hover_extra = subset.apply(lambda r: ('Bullish Weak‑Leg' if r['weak_dir'] > 0 else 'Bearish Weak‑Leg') if tag == '⏳' else tag_labels[tag], axis=1)
             fig.add_trace(go.Scatter(
-                x=df['date'], y=df['close'],
-                mode='lines', name='Close Price',
-                line=dict(color='lightblue', width=2),
-                customdata=df[['date', 'open', 'high', 'low', 'close', 'point_change']],
+                x=subset['date'], y=subset['close'],
+                mode='markers+text',
+                name=tag_labels.get(tag, tag),
+                text=[tag] * len(subset),
+                textposition='top center',
+                textfont=dict(size=20),
+                marker=dict(size=14, symbol="circle", color='white'),
+                customdata=pd.concat([subset[['open', 'high', 'low', 'close', 'point_change']].reset_index(drop=True), hover_extra.reset_index(drop=True)], axis=1).values,
                 hovertemplate=(
-                    "📅 Date: %{customdata[0]|%Y-%m-%d}<br>" +
-                    "🟢 Open: %{customdata[1]:.2f}<br>" +
-                    "📈 High: %{customdata[2]:.2f}<br>" +
-                    "📉 Low: %{customdata[3]:.2f}<br>" +
-                    "💰 LTP: %{customdata[4]:.2f}<br>" +
-                    "📊 Point Change: %{customdata[5]:.2f}<extra></extra>"
+                    "📅 Date: %{x|%Y-%m-%d}<br>" +
+                    "🟢 Open: %{customdata[0]:.2f}<br>" +
+                    "📈 High: %{customdata[1]:.2f}<br>" +
+                    "📉 Low: %{customdata[2]:.2f}<br>" +
+                    "🔚 Close: %{customdata[3]:.2f}<br>" +
+                    "📊 Point Change: %{customdata[4]:.2f}<br>" +
+                    "%{customdata[5]}<extra></extra>"
                 )
-            ))  
+            ))
 
-
-            tag_labels = {
-                '🟢': '🟢 Aggressive Buyers',
-                '🔴': '🔴 Aggressive Sellers',
-                '⛔': '⛔ Buyer Absorption',
-                '🚀': '🚀 Seller Absorption',
-                '💥': '💥 Bullish POR',
-                '💣': '💣 Bearish POR',
-                '🐂': '🐂 Bullish POI',
-                '🐻': '🐻 Bearish POI',
-                '📉': '📉 Bullish Weak Legs',
-                '📈': '📈 Bearish Weak Legs'
-            }
-
-            signals = df[df['tag'] != '']
-            for tag in signals['tag'].unique():
-                subset = signals[signals['tag'] == tag]
-                fig.add_trace(go.Scatter(
-                    x=subset['date'], y=subset['close'],
-                    mode='markers+text',
-                    name=tag_labels.get(tag, tag),
-                    text=[tag] * len(subset),
-                    textposition='top center',
-                    textfont=dict(size=20),
-                    marker=dict(size=14, symbol="circle", color='white'),
-                    customdata=subset[['open', 'high', 'low', 'close', 'point_change']].values,
-                    hovertemplate=(
-                        "📅 Date: %{x|%Y-%m-%d}<br>" +
-                        "🟢 Open: %{customdata[0]:.2f}<br>" +
-                        "📈 High: %{customdata[1]:.2f}<br>" +
-                        "📉 Low: %{customdata[2]:.2f}<br>" +
-                        "🔚 Close: %{customdata[3]:.2f}<br>" +
-                        "📊 Point Change: %{customdata[4]:.2f}<br>" +
-                        f"{tag_labels.get(tag, tag)}<extra></extra>"
-                    )
-                ))
-                
             # Calculate 15 days ahead of the last date
-            last_date = df['date'].max()
-            extended_date = last_date + timedelta(days=15)
-            chart_bg = ""
-            fig.update_layout(
-                height=800,
-                width=1800,
-                plot_bgcolor="darkslategray",
-                paper_bgcolor="darkslategray",
-                font_color="white",
-                title=chart_bg,
-                xaxis=dict(title="Date", tickangle=-45, showgrid=False, range=[df['date'].min(),extended_date]), #extend x-axis to show space after latest date
-                yaxis=dict(title="Price", showgrid=False, zeroline=True, zerolinecolor="gray", autorange=True),
-                margin=dict(l=50, r=50, b=130, t=50),
-                legend=dict(
-                    orientation="h",
-                    yanchor="top",
-                    y=-0.2,  # Adjust this value to move further down if needed
-                    xanchor="center",
-                    x=0.5,
-                    font=dict(size=14),
-                    bgcolor="rgba(0,0,0,0)"  # Optional: keeps legend background transparent)
-                ),
-                # Add zoom and pan capabilities
-                dragmode="zoom",  # Enable box zoom
-                annotations=[
-                    dict(
-                        text=f"{company_symbol} <br> Quantexo",
-                        xref="paper", yref="paper",
-                        x=0.5, y=0.5,
-                        xanchor="center", yanchor="middle",
-                        font=dict(size=25, color="rgba(59, 59, 59)"),
-                        showarrow=False
-                    )
-                ]
-            )
-            st.plotly_chart(fig, use_container_width=False)
-                
-
-        else:
-            st.warning("⚠️ Unable to calculate trading signals due to insufficient data")
-            
-    except Exception as e:
-        st.error(f"⚠️ Processing error: {str(e)}")
-
+        last_date = df['date'].max()
+        extended_date = last_date + timedelta(days=15)
+        fig.update_layout(
+            height=800,
+            width=1800,
+            plot_bgcolor="darkslategray",
+            paper_bgcolor="darkslategray",
+            font_color="white",
+            xaxis=dict(title="Date", tickangle=-45, showgrid=False, range=[df['date'].min(),extended_date]), #extend x-axis to show space after latest date
+            yaxis=dict(title="Price", showgrid=False),
+            margin=dict(l=50, r=50, b=130, t=50),
+            legend=dict(orientation="h", yanchor="top", y=-0.2, xanchor="center", x=0.5, font=dict(size=14), bgcolor="rgba(0,0,0,0)" ),
+            dragmode="zoom", 
+            annotations=[
+                dict(text=f"{company_symbol} <br> Quantexo", xref="paper", yref="paper", x=0.5, y=0.5,  xanchor="center", yanchor="middle", font=dict(size=25, color="rgba(59, 59, 59)"), showarrow=False
+                )
+            ]
+        )
+    st.plotly_chart(fig, use_container_width=False)
 else:
     st.info("ℹ👆🏻 Enter a company symbol to get analysed chart 👆🏻")
