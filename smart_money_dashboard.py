@@ -40,7 +40,7 @@ sector_to_companies ={
     "Trading": {"BBC","STC"}
 }
 #---UI LAYOUT---
-col1, col2, col3, col4 =st.columns([0.8,0.8,0.8,0.8])
+col1, col2, col3, col4 =st.columns([0.7,0.7,0.7,0.7])
 
 # --- Sector Selection ---
 with col1:
