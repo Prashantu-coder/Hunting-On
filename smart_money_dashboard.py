@@ -125,6 +125,11 @@ if company_symbol:
 
     df['tag'] = ''
 
+    if len(df) < 4:          # need at least 4 rows for the logic
+        st.warning("Not enough price history to compute signals (need ≥ 4 rows).")
+    st.plotly_chart(go.Figure(), use_container_width=False)
+    st.stop()
+
     for i in range(min(3, len(df)-1), len(df)):
         row = df.iloc[i]
         prev = df.iloc[i - 1]
