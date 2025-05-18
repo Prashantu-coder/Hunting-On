@@ -40,7 +40,7 @@ sector_to_companies ={
     "Trading": {"BBC","STC"}
 }
 #---UI LAYOUT---
-col1, col2, col3, col4 =st.columns([0.7,0.7,0.7,0.7])
+col1, col2, col3, col4 =st.columns([0.5,0.5,0.5,0.5])
 
 # --- Sector Selection ---
 with col1:
@@ -64,7 +64,7 @@ with col3:
         "🔍 Enter Company Symbol",
         "",
         label_visibility= "collapsed",
-        placeholder= "🔍 Enter Company Symbol"
+        placeholder= "🔍 Enter Symbol"
     )
 with col4:
     st.write("")
