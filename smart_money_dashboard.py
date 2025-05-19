@@ -205,6 +205,25 @@ if company_symbol:
                     df.at[i, 'tag'] = '🔴'
 
                 elif (
+                    row['close'] > row['open'] and
+                    row['volume'] > avg_volume[i] * 1.2
+                ):
+                    df.loc[df['tag'] == '⛔', 'tag'] = ''
+                    for j, candle in next_candles.iterrows():
+                        if candle['close'] < row['open']:
+                            df.at[j, 'tag'] = '⛔'
+                            break
+                elif (
+                    row['open'] > row['close'] and
+                    row['volume'] > avg_volume[i] * 1.2
+                ):
+                    df.loc[df['tag'] == '🚀', 'tag'] = ''
+                    for j, candle in next_candles.iterrows():
+                        if candle['close'] > row['open']:
+                            df.at[j, 'tag'] = '🚀'
+                            break
+
+                elif (
                     i >= 10 and
                     row['high'] > max(df['high'].iloc[i - 10:i]) and
                     row['volume'] > avg_volume[i] * 1.8
@@ -250,24 +269,7 @@ if company_symbol:
                 ):
                     df.at[i, 'tag'] = '📈'
 
-                elif (
-                    row['close'] > row['open'] and
-                    row['volume'] > avg_volume[i] * 1.2
-                ):
-                    df.loc[df['tag'] == '⛔', 'tag'] = ''
-                    for j, candle in next_candles.iterrows():
-                        if candle['close'] < row['open']:
-                            df.at[j, 'tag'] = '⛔'
-                            break
-                elif (
-                    row['open'] > row['close'] and
-                    row['volume'] > avg_volume[i] * 1.2
-                ):
-                    df.loc[df['tag'] == '🚀', 'tag'] = ''
-                    for j, candle in next_candles.iterrows():
-                        if candle['close'] > row['open']:
-                            df.at[j, 'tag'] = '🚀'
-                            break
+                
             # --- Visualization ---
             # st.subheader(f"{company_symbol} - Smart Money Line Chart")
 
