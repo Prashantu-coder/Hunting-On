@@ -183,7 +183,7 @@ if company_symbol:
 
                 body = abs(row['close'] - row['open'])
                 prev_body = abs(prev['close'] - prev['open'])
-                recent_tags = df['tag'].iloc[max(0, i - 4):i]
+                recent_tags = df['tag'].iloc[max(0, i - 9):i]
 
                 # --- Signals that DON'T require future data (always checked) ---
                 if (
