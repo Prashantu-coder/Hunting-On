@@ -44,7 +44,7 @@ col1, col2, col3, col4 =st.columns([0.5,0.5,0.5,0.5])
 
 # --- Sector Selection ---
 with col1:
-    selected_sector = st.selectbox("Select Sector",placeholder="Select Sector",options=[""]+ list(sector_to_companies.keys()),label_visibility= "collapsed",placeholder= "🗳️ Select Sector")
+    selected_sector = st.selectbox("Select Sector",options=[""]+ list(sector_to_companies.keys()),label_visibility= "collapsed",placeholder= "🗳️ Select Sector")
 # ---Filter Companies based on Sector ---
 with col2:
     if selected_sector:
