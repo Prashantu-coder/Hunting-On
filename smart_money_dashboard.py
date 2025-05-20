@@ -141,8 +141,12 @@ if st.sidebar.button("📚 Open Help Documentation"):
     show_help_section()
 
 with st.sidebar:
-    if st.button("❓ Frequently Asked Questions"):
-        st.switch_page("pages/1_FAQ.py")
+    col1, col2 = st.columns([1, 3])
+    with col1:
+        st.page_link("pages/1_FAQ.py", icon="❓")  # Icon only
+    with col2:
+        if st.button("Frequently Asked Questions", use_container_width=True):
+            st.switch_page("pages/1_FAQ.py")
 # --- SECTOR TO COMPANY MAPPING ---
 sector_to_companies = {
     "Commercial Banks": {"ADBL","CZBIL","EBL","GBIME","HBL","KBL","LSL","MBL","NABIL","NBL","NICA","NIMB","NMB","PCBL","PRVU","SANIMA","SBI","SBL","SCB"},
