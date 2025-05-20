@@ -422,7 +422,7 @@ if company_symbol:
             x=df['date'],
             y=df['volume'],
             name='Volume',
-            marker_color='grid',
+            marker_color='blue',
             yaxis='y2'
         ))
         st.plotly_chart(fig, use_container_width=False)      
