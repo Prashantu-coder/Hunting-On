@@ -140,23 +140,10 @@ def show_help_section():
 if st.sidebar.button("📚 Open Help Documentation"):
     show_help_section()
 
-with st.expander("❓ Frequently Asked Questions"):
-    st.markdown("""
-    **Q: Why don't I see any signals?**  
-    A: This typically means no strong patterns were detected in the recent price action.
-    
-    **Q: How often should I refresh the data?**  
-    A: The app auto-refreshes every hour, but you can force refresh by re-running the scan.
-    """)
-    
-def show_faqs():
-    st.title("❓ Frequently Asked Questions")
-    # [Same FAQ content as above]
-
 with st.sidebar:
-    if st.button("❓ FAQs"):
-        show_faqs()
-        st.stop()  # This will hide the main content
+    if st.button("❓ FAQs", use_container_width=True):
+        st.switch_page("pages/3_❓_FAQs.py")
+        
 # --- SECTOR TO COMPANY MAPPING ---
 sector_to_companies = {
     "Commercial Banks": {"ADBL","CZBIL","EBL","GBIME","HBL","KBL","LSL","MBL","NABIL","NBL","NICA","NIMB","NMB","PCBL","PRVU","SANIMA","SBI","SBL","SCB"},
