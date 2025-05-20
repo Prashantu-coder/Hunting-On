@@ -207,7 +207,7 @@ if scan_all_clicked:
         st.markdown("⏳ Preparing scan...")
         progress_bar = st.progress(0)
         status_text = st.empty()
-        scan_complete = st.empty()
+        results_placeholder = st.empty()
 
     # Flatten all companies
     all_companies = sorted(set().union(*sector_to_companies.values()))
@@ -249,26 +249,26 @@ if scan_all_clicked:
         except Exception as e:
             st.warning(f"⚠️ Error processing {symbol}: {str(e)}")
         return None
-    # Parallel processing with progress updates
-    from concurrent.futures import ThreadPoolExecutor, as_completed
-
+    # Process companies in batches to avoid UI update conflicts
+    batch_size = 4
     all_results = []
-    completed = 0
-
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        futures = {executor.submit(process_company, symbol): symbol for symbol in all_companies}
+    
+    for i in range(0, len(all_companies), batch_size):
+        batch = all_companies[i:i + batch_size]
+        batch_results = []
         
-        for future in as_completed(futures):
-            completed += 1
-            progress = completed / total_companies
-            progress_bar.progress(progress)
-            status_text.text(f"🔍 Scanned {completed}/{total_companies} companies")
-            
-            result = future.result()
+        # Process batch sequentially (but still faster than all sequentially)
+        for symbol in batch:
+            result = process_company(symbol)
             if result:
-                all_results.append(result)
+                batch_results.append(result)
+            
+            # Update progress
+            progress = min((i + batch.index(symbol) + 1) / total_companies, 1.0)
+            progress_bar.progress(progress)
+            status_text.text(f"🔍 Scanned {i + batch.index(symbol) + 1}/{total_companies} companies")
+        all_results.extend(batch_results)
 
-    loading_container.empty()
     progress_bar.empty()
     status_text.empty()
 
