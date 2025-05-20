@@ -371,7 +371,13 @@ if company_symbol:
                     f"{tag_labels.get(tag, tag)}<extra></extra>"
                 )
             ))
-
+        fig.add_trace(go.Bar(
+            x=df['date'],
+            y=df['volume'],
+            name='Volume',
+            marker_color='blue',
+            yaxis='y2'
+        ))
         # Calculate 15 days ahead of the last date
         last_date = df['date'].max()
         extended_date = last_date + timedelta(days=15)
@@ -405,6 +411,12 @@ if company_symbol:
                     showarrow=False
                 )
             ]
+            yaxis2=dict(
+                title='Volume',
+                overlaying='y',
+                side='right',
+                showgrid=False
+            ),
         )
         fig.update_xaxes(
             rangeselector=dict(
