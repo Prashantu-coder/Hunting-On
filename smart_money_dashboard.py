@@ -142,7 +142,7 @@ if st.sidebar.button("📚 Open Help Documentation"):
 
 with st.sidebar:
     if st.button("❓ Frequently Asked Questions"):
-        st.markdown("FAQ.py")
+        st.switch_page("FAQ.py")
 # --- SECTOR TO COMPANY MAPPING ---
 sector_to_companies = {
     "Commercial Banks": {"ADBL","CZBIL","EBL","GBIME","HBL","KBL","LSL","MBL","NABIL","NBL","NICA","NIMB","NMB","PCBL","PRVU","SANIMA","SBI","SBL","SCB"},
