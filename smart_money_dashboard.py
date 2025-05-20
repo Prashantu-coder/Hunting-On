@@ -256,6 +256,24 @@ if scan_all_clicked:
                 ):
                     tag = '🔴'
                 elif (
+                    row['close'] > row['open'] and
+                    row['volume'] > avg_volume[i] * 1.2
+                ):
+                    df.loc[df['tag'] == '⛔', 'tag'] = ''
+                    for j, candle in next_candles.iterrows():
+                        if candle['close'] < row['open']:
+                            df.at[j, 'tag'] = '⛔'
+                            break
+                elif (
+                    row['open'] > row['close'] and
+                    row['volume'] > avg_volume[i] * 1.2
+                ):
+                    df.loc[df['tag'] == '🚀', 'tag'] = ''
+                    for j, candle in next_candles.iterrows():
+                        if candle['close'] > row['open']:
+                            df.at[j, 'tag'] = '🚀'
+                            break
+                elif (
                     i >= 10 and
                     row['high'] > max(df['high'].iloc[last_row_index - 10:last_row_index]) and
                     row['volume'] > avg_volume[last_row_index] * 1.8
@@ -306,6 +324,8 @@ if scan_all_clicked:
             color_map = {
                 '🟢': 'green',
                 '🔴': 'red',
+                '⛔': 'pink',
+                '🚀': 'silver',
                 '💥': 'orange',
                 '💣': 'darkorange',
                 '🐂': 'lightgreen',
@@ -320,7 +340,7 @@ if scan_all_clicked:
         nepali_tz = pytz.timezone('Asia/Kathmandu')
         now = datetime.now(nepali_tz)
         timestamp_str = now.strftime("%Y-%B-%d_%I-%M%p")
-        file_name = f"1_Months_Signal_{company_symbol}_{timestamp_str}_Quantexo🕵️_NEPSE.xlsx"
+        file_name = f"Dtected.Signal__{timestamp_str}_Quantexo🕵️_NEPSE.xlsx"
 
         csv = result_df.to_csv(index=False).encode('utf-8')
         st.download_button(
