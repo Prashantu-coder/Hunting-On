@@ -207,44 +207,66 @@ if scan_all_clicked:
         st.markdown("⏳ Preparing scan...")
         progress_bar = st.progress(0)
         status_text = st.empty()
+        scan_complete = st.empty()
 
     # Flatten all companies
     all_companies = sorted(set().union(*sector_to_companies.values()))
-
-    progress = st.progress(0, text="🔍 Scanning...")
-
-    for i, symbol in enumerate(all_companies):
-        progress= (i+1) / len(all_companies)
-        progress_bar.progress(progress)
-        status_text.text(f"🔍 Scanning {symbol} ({i+1}/{len(all_companies)})")
-
-        df = get_sheet_data(symbol, sheet_name)
-        if df.empty:
-            continue
-
-        df.columns = [col.lower() for col in df.columns]
-        df['symbol'] = symbol
+    total_companies = len(all_companies)
+    
+    # Build sector mapping beforehand
+    sector_map = {}
+    for sector, companies in sector_to_companies.items():
+        for company in companies:
+            sector_map[company] = sector
+    def process_company(symbol):
         try:
+            df = get_sheet_data(symbol, sheet_name)
+            if df.empty:
+                return None
+
+            df.columns = [col.lower() for col in df.columns]
+            df['symbol'] = symbol
+            
+            # Data processing
             df['date'] = pd.to_datetime(df['date'], errors='coerce')
             numeric_cols = ['open', 'high', 'low', 'close', 'volume']
             for col in numeric_cols:
-                df[col] = pd.to_numeric(df[col].astype(str).str.replace('[^\d.]', '', regex=True), errors='coerce')
+                df[col] = pd.to_numeric(
+                    df[col].astype(str).str.replace('[^\d.]', '', regex=True), 
+                    errors='coerce'
+                )
             df = df.dropna()
-            df.sort_values('date', inplace=True)
-            df.reset_index(drop=True, inplace=True)
-
+            
             if len(df) > 10:
-                df = df.tail(10).copy()  # Make a copy to avoid SettingWithCopyWarning
-                df.reset_index(drop=True, inplace=True)
-
-            if len(df) > 3:  # Need at least 3 days for some signals
+                df = df.tail(10).copy()
+            
+            if len(df) > 3:
                 results = detect_signals(df)
-                # Only keep signals from the most recent day (last row)
-                if results and len(results) > 0:
+                if results:
                     latest_signal = max(results, key=lambda x: x['date'])
-                    all_results.append(latest_signal)
+                    latest_signal['sector'] = sector_map.get(symbol, 'Unknown')
+                    return latest_signal
         except Exception as e:
             st.warning(f"⚠️ Error processing {symbol}: {str(e)}")
+        return None
+    # Parallel processing with progress updates
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    all_results = []
+    completed = 0
+
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        futures = {executor.submit(process_company, symbol): symbol for symbol in all_companies}
+        
+        for future in as_completed(futures):
+            completed += 1
+            progress = completed / total_companies
+            progress_bar.progress(progress)
+            status_text.text(f"🔍 Scanned {completed}/{total_companies} companies")
+            
+            result = future.result()
+            if result:
+                all_results.append(result)
 
     loading_container.empty()
     progress_bar.empty()
@@ -282,8 +304,8 @@ if scan_all_clicked:
             file_name= file_name,
             mime='text/csv'
         )
-    else:
-        st.toast("ℹ️ No signals found", icon="ℹ️")
+else:
+    st.toast("ℹ️ No signals found", icon="ℹ️")
 
 if company_symbol:
     sheet_name = "Daily Price"
