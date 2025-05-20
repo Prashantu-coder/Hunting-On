@@ -249,6 +249,7 @@ if scan_all_clicked:
     status_text.empty()
 
     if all_results:
+        st.toast("✅ Scan completed!", icon="✅")
         result_df = pd.DataFrame(all_results)
         result_df = result_df.sort_values(by="date", ascending=False)
         
@@ -280,7 +281,7 @@ if scan_all_clicked:
             mime='text/csv'
         )
     else:
-        st.info("✅ No signals found across companies.")
+        st.toast("ℹ️ No signals found", icon="ℹ️")
 
 if company_symbol:
     sheet_name = "Daily Price"
