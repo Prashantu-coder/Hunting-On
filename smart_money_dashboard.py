@@ -141,8 +141,7 @@ if st.sidebar.button("📚 Open Help Documentation"):
     show_help_section()
 
 with st.sidebar:
-    if st.button("❓ FAQs", use_container_width=True):
-        st.switch_page("pages/3_❓_FAQs.py")
+    st.page_link("./pages/3_FAQs.py", label="FAQs", icon="❓")
         
 # --- SECTOR TO COMPANY MAPPING ---
 sector_to_companies = {
