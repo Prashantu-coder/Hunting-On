@@ -371,13 +371,6 @@ if company_symbol:
                     f"{tag_labels.get(tag, tag)}<extra></extra>"
                 )
             ))
-        fig.add_trace(go.Bar(
-            x=df['date'],
-            y=df['volume'],
-            name='Volume',
-            marker_color='blue',
-            yaxis='y2'
-        ))
         # Calculate 15 days ahead of the last date
         last_date = df['date'].max()
         extended_date = last_date + timedelta(days=15)
@@ -398,12 +391,6 @@ if company_symbol:
                 x=0.5,
                 font=dict(size=14),
                 bgcolor="rgba(0,0,0,0)"  # Optional: keeps legend background transparent)
-            ),
-            yaxis2=dict(
-                title='Volume',
-                overlaying='y',
-                side='right',
-                showgrid=False
             ),
             # Add zoom and pan capabilities
             dragmode="zoom",  # Enable box zoom
@@ -430,7 +417,7 @@ if company_symbol:
                 ])
             )
         )
-        st.plotly_chart(fig, use_container_width=False)      
+        st.plotly_chart(fig, use_container_width=True)      
     except Exception as e:
         st.error(f"⚠️ Processing error: {str(e)}")
 else:
