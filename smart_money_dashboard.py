@@ -80,10 +80,10 @@ with col4:
 if search_clicked:
     if user_input.strip():
         company_symbol = user_input.strip().upper()
-        st.toast(f"🔎 Analyzing {company_symbol}...", icon="")
+        st.toast(f"🔎 Analyzing {company_symbol}...", icon="⚙️")
     elif selected_dropdown:
         company_symbol = selected_dropdown
-        st.toast(f"🔎 Analyzing {company_symbol}...", icon="")
+        st.toast(f"🔎 Analyzing {company_symbol}...", icon="⚙️")
     else:
         st.warning("⚠️ Please enter or select a company.")
         st.stop()
