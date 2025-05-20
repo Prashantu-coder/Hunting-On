@@ -200,6 +200,12 @@ if scan_all_clicked:
     all_results = []
     sheet_name = "Daily Price"
 
+    loading_container = st.empty()
+    with loading_container.container():
+        st.markdown("⏳ Preparing scan...")
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+
     # Flatten all companies
     all_companies = sorted(set().union(*sector_to_companies.values()))
 
