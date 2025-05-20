@@ -260,7 +260,7 @@ if scan_all_clicked:
         nepali_tz = pytz.timezone('Asia/Kathmandu')
         now = datetime.now(nepali_tz)
         timestamp_str = now.strftime("%Y-%B-%d_%I-%M%p")
-        file_name = f"Dtected.Signal__{timestamp_str}_Quantexo🕵️_NEPSE.xlsx"
+        file_name = f"Detected.Signal__{timestamp_str}_Quantexo🕵️_NEPSE.csv"
 
         csv = result_df.to_csv(index=False).encode('utf-8')
         st.download_button(
