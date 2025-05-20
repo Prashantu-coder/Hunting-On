@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
@@ -252,23 +250,6 @@ if company_symbol:
                     row['volume'] > avg_volume[i] * 2
                 ):
                     df.at[i, 'tag'] = '🐻'
-
-                elif (
-                    df['point_change'].iloc[i] > 0 and
-                    row['close'] > row['open'] and
-                    body < 0.3 * prev_body and
-                    row['volume'] < avg_volume[i] * 0.5
-                ):
-                    df.at[i, 'tag'] = '📉'
-
-                elif (
-                    df['point_change'].iloc[i] < 0 and
-                    row['open'] > row['close'] and
-                    body < 0.3 * prev_body and
-                    row['volume'] < avg_volume[i] * 0.5
-                ):
-                    df.at[i, 'tag'] = '📈'
-
                 
             # --- Visualization ---
             # st.subheader(f"{company_symbol} - Smart Money Line Chart")
@@ -298,9 +279,7 @@ if company_symbol:
                 '💥': '💥 Bullish POR',
                 '💣': '💣 Bearish POR',
                 '🐂': '🐂 Bullish POI',
-                '🐻': '🐻 Bearish POI',
-                '📉': '📉 Bullish Weak Legs',
-                '📈': '📈 Bearish Weak Legs'
+                '🐻': '🐻 Bearish POI'
             }
 
             signals = df[df['tag'] != '']
@@ -366,8 +345,7 @@ if company_symbol:
                 
 
         else:
-            st.warning("⚠️ Unable to calculate trading signals due to insufficient data")
-            
+            st.warning("⚠️ Unable to calculate trading signals due to insufficient data")       
     except Exception as e:
         st.error(f"⚠️ Processing error: {str(e)}")
 
