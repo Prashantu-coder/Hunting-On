@@ -390,13 +390,14 @@ if company_symbol:
             legend=dict(
                 orientation="h",
                 yanchor="top",
-                y=-0.1,  
+                y=-0.2,  # Adjust this value to move further down if needed
                 xanchor="center",
-                x=0.6,
+                x=0.5,
                 font=dict(size=14),
-                bgcolor="rgba(0,0,0,0)"  
+                bgcolor="rgba(0,0,0,0)"  # Optional: keeps legend background transparent)
             ),
-            dragmode="zoom",  
+            # Add zoom and pan capabilities
+            dragmode="zoom",  # Enable box zoom
             annotations=[
                 dict(
                     text=f"{company_symbol} <br> Quantexo",
