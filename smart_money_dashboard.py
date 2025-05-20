@@ -375,14 +375,12 @@ if company_symbol:
         # Calculate 15 days ahead of the last date
         last_date = df['date'].max()
         extended_date = last_date + timedelta(days=15)
-        chart_bg = ""
         fig.update_layout(
             height=800,
             width=1800,
             plot_bgcolor="darkslategray",
             paper_bgcolor="darkslategray",
-            font_color="white",
-            title=chart_bg,
+            font_color="white",S
             xaxis=dict(title="Date", tickangle=-45, showgrid=False, range=[df['date'].min(), extended_date]), #extend x-axis to show space after latest date
             yaxis=dict(title="Price", showgrid=False, zeroline=True, zerolinecolor="gray", autorange=True),
             margin=dict(l=50, r=50, b=130, t=50),
@@ -407,6 +405,18 @@ if company_symbol:
                     showarrow=False
                 )
             ]
+        )
+        fig.update_xaxes(
+            rangeselector=dict(
+                buttons=list([
+                    dict(count=1, label="1m", step="month", stepmode="backward"),
+                    dict(count=3, label="3m", step="month", stepmode="backward"),
+                    dict(count=6, label="6m", step="month", stepmode="backward"),
+                    dict(count=1, label="YTD", step="year", stepmode="todate"),
+                    dict(count=1, label="1y", step="year", stepmode="backward"),
+                    dict(step="all")
+                ])
+            )
         )
         st.plotly_chart(fig, use_container_width=False)      
     except Exception as e:
