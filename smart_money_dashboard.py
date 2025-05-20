@@ -397,7 +397,7 @@ if company_symbol:
                 bgcolor="rgba(0,0,0,0)"  # Optional: keeps legend background transparent)
             ),
             # Add zoom and pan capabilities
-            dragmode="zoom",  # Enable box zoom
+            dragmode='zoom',  # Enable box zoom
             annotations=[
                 dict(
                     text=f"{company_symbol} <br> Quantexo",
