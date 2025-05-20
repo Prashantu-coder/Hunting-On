@@ -390,13 +390,13 @@ if company_symbol:
             legend=dict(
                 orientation="h",
                 yanchor="top",
-                y=1.2,  
+                y=-1.2,  
                 xanchor="center",
                 x=1,
                 font=dict(size=14),
                 bgcolor="rgba(0,0,0,0)"  
             ),
-            dragmode='pan',  
+            dragmode='zoom',  
             annotations=[
                 dict(
                     text=f"{company_symbol} <br> Quantexo",
