@@ -80,10 +80,10 @@ with col4:
 if search_clicked:
     if user_input.strip():
         company_symbol = user_input.strip().upper()
-        st.toast(f"🔎 Analyzing {company_symbol}...", icon="🔍")
+        st.toast(f"🔎 Analyzing {company_symbol}...", icon="")
     elif selected_dropdown:
         company_symbol = selected_dropdown
-        st.toast(f"🔎 Analyzing {company_symbol}...", icon="🔍")
+        st.toast(f"🔎 Analyzing {company_symbol}...", icon="")
     else:
         st.warning("⚠️ Please enter or select a company.")
         st.stop()
@@ -379,7 +379,7 @@ if company_symbol:
         for tag in signals['tag'].unique():
             subset = signals[signals['tag'] == tag]
             fig.add_trace(go.Scatter(
-                x=subset['date'], y=subset['close']*0.98,
+                x=subset['date'], y=subset['close'],
                 mode='markers+text',
                 name=tag_labels.get(tag, tag),
                 text=[tag] * len(subset),
