@@ -380,7 +380,7 @@ if company_symbol:
             width=1800,
             plot_bgcolor="darkslategray",
             paper_bgcolor="darkslategray",
-            font_color="white",S
+            font_color="white",
             xaxis=dict(title="Date", tickangle=-45, showgrid=False, range=[df['date'].min(), extended_date]), #extend x-axis to show space after latest date
             yaxis=dict(title="Price", showgrid=False, zeroline=True, zerolinecolor="gray", autorange=True),
             margin=dict(l=50, r=50, b=130, t=50),
