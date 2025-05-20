@@ -335,18 +335,7 @@ if company_symbol:
         # Detect signals
         results = detect_signals(df)
 
-        with st.expander("📚 Signal Reference Guide", expanded=False):
-            st.markdown("""
-            **Signal Legend:**
-            - 🟢 Aggressive Buying
-            - 🔴 Aggressive Selling
-            - ⛔ Buyer Absorption  
-            - 🚀 Seller Absorption
-            - 💥 Bullish Breakout
-            - 💣 Bearish Breakdown
-            - 🐂 Bullish POI
-            - 🐻 Bearish POI
-            """)
+        
 
         fig = go.Figure()
         fig.add_trace(go.Scatter(
@@ -445,7 +434,20 @@ if company_symbol:
         )
         with st.spinner("Rendering interactive chart..."):
             st.plotly_chart(fig, use_container_width=False)
-            st.success("✅ Chart rendered!")     
+            st.success("✅ Chart rendered!")
+        with st.expander("📚 Signal Reference Guide", expanded=False):
+            st.markdown("""
+            **Signal Legend:**
+            - 🟢 Aggressive Buying
+            - 🔴 Aggressive Selling
+            - ⛔ Buyer Absorption  
+            - 🚀 Seller Absorption
+            - 💥 Bullish Breakout
+            - 💣 Bearish Breakdown
+            - 🐂 Bullish POI
+            - 🐻 Bearish POI
+            """)
+
     except Exception as e:
         st.error(f"⚠️ Processing error: {str(e)}")
 else:
