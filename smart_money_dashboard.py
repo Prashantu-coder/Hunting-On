@@ -399,6 +399,12 @@ if company_symbol:
                 font=dict(size=14),
                 bgcolor="rgba(0,0,0,0)"  # Optional: keeps legend background transparent)
             ),
+            yaxis2=dict(
+                title='Volume',
+                overlaying='y',
+                side='right',
+                showgrid=False
+            ),
             # Add zoom and pan capabilities
             dragmode="zoom",  # Enable box zoom
             annotations=[
@@ -411,12 +417,6 @@ if company_symbol:
                     showarrow=False
                 )
             ]
-            yaxis2=dict(
-                title='Volume',
-                overlaying='y',
-                side='right',
-                showgrid=False
-            ),
         )
         fig.update_xaxes(
             rangeselector=dict(
