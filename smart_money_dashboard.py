@@ -222,75 +222,15 @@ if scan_all_clicked:
             df.reset_index(drop=True, inplace=True)
 
             if len(df) > 10:
-                last_row_index = len(df) - 1
-                row = df.iloc[last_row_index]
-                prev = df.iloc[last_row_index - 1]
-                next_candles = pd.DataFrame()
-                
-                df['point_change'] = df['close'].diff().fillna(0)
-                df['tag'] = ''
+                df = df.tail(10).copy()  # Make a copy to avoid SettingWithCopyWarning
+                df.reset_index(drop=True, inplace=True)
 
-                min_window = min(20, max(5, len(df) // 2)) 
-                avg_volume = df['volume'].rolling(window=min_window).mean().fillna(method='bfill').fillna(df['volume'].mean())
-                
-                body = abs(row['close'] - row['open'])
-                prev_body = abs(prev['close'] - prev['open'])
-                recent_tags = df['tag'].iloc[max(0, last_row_index - 9):last_row_index]
-                
-                tag = ''
-
-                if (
-                    row['close'] > row['open'] and
-                    row['close'] >= row['high'] - (row['high'] - row['low']) * 0.1 and
-                    row['volume'] > avg_volume[last_row_index] * 2 and
-                    body > prev_body and
-                    '🟢' not in recent_tags.values
-                ):
-                    tag = '🟢'
-                elif (
-                    row['open'] > row['close'] and
-                    row['close'] <= row['low'] + (row['high'] - row['low']) * 0.1 and
-                    row['volume'] > avg_volume[last_row_index] * 2 and
-                    body > prev_body and
-                    '🔴' not in recent_tags.values
-                ):
-                    tag = '🔴'
-                elif (
-                    i >= 10 and
-                    row['high'] > max(df['high'].iloc[last_row_index - 10:last_row_index]) and
-                    row['volume'] > avg_volume[last_row_index] * 1.8
-                ):
-                    if not (df['tag'].iloc[last_row_index - 8:last_row_index] == '💥').any():
-                        tag = '💥'
-                elif (
-                    i >= 10 and
-                    row['low'] < min(df['low'].iloc[last_row_index - 10:last_row_index]) and
-                    row['volume'] > avg_volume[last_row_index] * 1.8
-                ):
-                    if not (df['tag'].iloc[last_row_index - 8:last_row_index] == '💣').any():
-                        tag = '💣'
-                elif (
-                    row['close'] > row['open'] and
-                    body > (row['high'] - row['low']) * 0.7 and
-                    row['volume'] > avg_volume[last_row_index] * 2
-                ):
-                    tag = '🐂'
-                elif (
-                    row['open'] > row['close'] and
-                    body > (row['high'] - row['low']) * 0.7 and
-                    row['volume'] > avg_volume[last_row_index] * 2
-                ):
-                    tag = '🐻'
-
-                if tag:
-                    all_results.append({
-                        'symbol': symbol,
-                        'tag': tag,
-                        'date': row['date'].strftime('%Y-%m-%d'),
-                        'close': row['close'],
-                        'volume': row['volume'],
-                        'point_change': df['point_change'].iloc[last_row_index]
-                    })
+            if len(df) > 3:  # Need at least 3 days for some signals
+                results = detect_signals(df)
+                # Only keep signals from the most recent day (last row)
+                if results and len(results) > 0:
+                    latest_signal = max(results, key=lambda x: x['date'])
+                    all_results.append(latest_signal)
         except Exception as e:
             st.warning(f"⚠️ Error processing {symbol}: {str(e)}")
 
@@ -302,22 +242,20 @@ if scan_all_clicked:
         result_df = pd.DataFrame(all_results)
         result_df = result_df.sort_values(by="date", ascending=False)
         
-        def color_signal(val):
-            color_map = {
-                '🟢': 'green',
-                '🔴': 'red',
-                '⛔': 'pink',
-                '🚀': 'silver',
-                '💥': 'orange',
-                '💣': 'darkorange',
-                '🐂': 'lightgreen',
-                '🐻': 'lightcoral'
-            }
-            color = color_map.get(val, 'black')
-            return f'color: {color}; font-weight: bold'
+        # Add sector information to the results
+        sector_map = {}
+        for sector, companies in sector_to_companies.items():
+            for company in companies:
+                sector_map[company] = sector
+        result_df['sector'] = result_df['symbol'].map(sector_map)
         
-        styled_df = result_df.style.applymap(color_signal, subset=['tag'])
-        st.dataframe(styled_df, use_container_width=True)
+        # Reorder columns
+        result_df = result_df[['date', 'symbol', 'sector', 'tag']]
+        
+        # Format the date nicely
+        result_df['date'] = pd.to_datetime(result_df['date']).dt.strftime('%Y-%m-%d')
+
+        st.dataframe(result_df, use_container_width=True)
 
         nepali_tz = pytz.timezone('Asia/Kathmandu')
         now = datetime.now(nepali_tz)
