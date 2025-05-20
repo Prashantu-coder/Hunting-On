@@ -356,13 +356,13 @@ if company_symbol:
         for tag in signals['tag'].unique():
             subset = signals[signals['tag'] == tag]
             fig.add_trace(go.Scatter(
-                x=subset['date'], y=subset['close']*0.98,
+                x=subset['date'], y=subset['close'],
                 mode='markers+text',
                 name=tag_labels.get(tag, tag),
                 text=[tag] * len(subset),
                 textposition='top center',
-                textfont=dict(size=16),
-                marker=dict(size=14, symbol="diamond", color='white'),
+                textfont=dict(size=20),
+                marker=dict(size=14, symbol="circle", color='white'),
                 customdata=subset[['open', 'high', 'low', 'close', 'point_change']].values,
                 hovertemplate=(
                     "📅 Date: %{x|%Y-%m-%d}<br>" +
@@ -378,13 +378,15 @@ if company_symbol:
         # Calculate 15 days ahead of the last date
         last_date = df['date'].max()
         extended_date = last_date + timedelta(days=15)
+        chart_bg = ""
         fig.update_layout(
             height=800,
             width=1800,
             plot_bgcolor="darkslategray",
             paper_bgcolor="darkslategray",
             font_color="white",
-            xaxis=dict(title="Date", tickangle=-45, showgrid=False, range=[df['date'].min(), extended_date], rangeslider=dict(visible=True)),
+            title=chart_bg,
+            xaxis=dict(title="Date", tickangle=-45, showgrid=False, range=[df['date'].min(), extended_date]), #extend x-axis to show space after latest date
             yaxis=dict(title="Price", showgrid=False, zeroline=True, zerolinecolor="gray", autorange=True),
             margin=dict(l=50, r=50, b=130, t=50),
             legend=dict(
@@ -397,7 +399,7 @@ if company_symbol:
                 bgcolor="rgba(0,0,0,0)"  # Optional: keeps legend background transparent)
             ),
             # Add zoom and pan capabilities
-            dragmode='zoom',  # Enable box zoom
+            dragmode="zoom",  # Enable box zoom
             annotations=[
                 dict(
                     text=f"{company_symbol} <br> Quantexo",
