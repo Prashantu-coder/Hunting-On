@@ -91,7 +91,7 @@ else:
     company_symbol = ""
 
 @st.cache_data(ttl=3600)
-def get_all_data():
+def get_sheet_data(symbol, sheet_name="Daily Price"):
     try:
         sheet_url = f"https://docs.google.com/spreadsheets/d/1Q_En7VGGfifDmn5xuiF-t_02doPpwl4PLzxb4TBCW0Q/export?format=csv&gid=0"  # Using gid=0 for the first sheet
         df = pd.read_csv(sheet_url)
@@ -100,7 +100,7 @@ def get_all_data():
         
         # Filter data based on company symbol
         df['symbol'] = df['symbol'].astype(str).str.strip().str.upper()
-        return df
+        return df[df['symbol'].str.upper() == symbol.upper()]
     except Exception as e:
         st.error(f"🔴 Error fetching data: {str(e)}")
         return pd.DataFrame()
@@ -211,7 +211,7 @@ if scan_all_clicked:
         progress_bar.progress(progress)
         status_text.text(f"🔍 Scanning {symbol} ({i+1}/{len(all_companies)})")
 
-        df = get_all_data(symbol, sheet_name)
+        df = get_sheet_data(symbol, sheet_name)
         if df.empty:
             continue
 
@@ -280,7 +280,7 @@ if scan_all_clicked:
 
 if company_symbol:
     sheet_name = "Daily Price"
-    df = get_all_data(company_symbol, sheet_name)
+    df = get_sheet_data(company_symbol, sheet_name)
 
     if df.empty:
         st.warning(f"No data found for {company_symbol}")
