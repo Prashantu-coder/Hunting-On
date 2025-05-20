@@ -321,9 +321,6 @@ if company_symbol:
 
         # Detect signals
         results = detect_signals(df)
-        
-        # --- Visualization ---
-        st.subheader(f"{company_symbol} - Smart Money Line Chart")
 
         fig = go.Figure()
         fig.add_trace(go.Scatter(
