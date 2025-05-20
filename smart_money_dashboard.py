@@ -333,6 +333,19 @@ if company_symbol:
         # Detect signals
         results = detect_signals(df)
 
+        with st.expander("📚 Signal Reference Guide", expanded=False):
+            st.markdown("""
+            **Signal Legend:**
+            - 🟢 Aggressive Buying
+            - 🔴 Aggressive Selling
+            - ⛔ Buyer Absorption  
+            - 🚀 Seller Absorption
+            - 💥 Bullish Breakout
+            - 💣 Bearish Breakdown
+            - 🐂 Bullish POI
+            - 🐻 Bearish POI
+            """)
+
         fig = go.Figure()
         fig.add_trace(go.Scatter(
             x=df['date'], y=df['close'],
