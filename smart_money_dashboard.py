@@ -140,8 +140,9 @@ def show_help_section():
 if st.sidebar.button("📚 Open Help Documentation"):
     show_help_section()
 
-with st.button("❓ Frequently Asked Questions"):
-    st.markdown("FAQ.py")
+with st.sidebar:
+    if st.button("❓ Frequently Asked Questions"):
+        st.markdown("FAQ.py")
 # --- SECTOR TO COMPANY MAPPING ---
 sector_to_companies = {
     "Commercial Banks": {"ADBL","CZBIL","EBL","GBIME","HBL","KBL","LSL","MBL","NABIL","NBL","NICA","NIMB","NMB","PCBL","PRVU","SANIMA","SBI","SBL","SCB"},
