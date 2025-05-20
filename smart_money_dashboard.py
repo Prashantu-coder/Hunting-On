@@ -139,9 +139,6 @@ def show_help_section():
         """)
 if st.sidebar.button("📚 Open Help Documentation"):
     show_help_section()
-
-with st.sidebar:
-    st.page_link("./pages/3_FAQs.py", label="FAQs", icon="❓")
         
 # --- SECTOR TO COMPANY MAPPING ---
 sector_to_companies = {
