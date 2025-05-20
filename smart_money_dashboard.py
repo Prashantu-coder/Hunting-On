@@ -418,6 +418,13 @@ if company_symbol:
                 ])
             )
         )
+        fig.add_trace(go.Bar(
+            x=df['date'],
+            y=df['volume'],
+            name='Volume',
+            marker_color='grid',
+            yaxis='y2'
+        ))
         st.plotly_chart(fig, use_container_width=False)      
     except Exception as e:
         st.error(f"⚠️ Processing error: {str(e)}")
