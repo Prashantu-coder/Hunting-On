@@ -22,6 +22,123 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+# Add this near your signal detection logic or in a separate help section
+SIGNAL_DOCS = {
+    "🟢": {
+        "name": "Aggressive Buying",
+        "description": "Strong bullish candle closing near high with high volume, indicating buyer dominance",
+        "interpretation": "Potential start of an uptrend or continuation pattern"
+    },
+    "🔴": {
+        "name": "Aggressive Selling",
+        "description": "Strong bearish candle closing near low with high volume, indicating seller dominance",
+        "interpretation": "Potential start of a downtrend or continuation pattern"
+    },
+    "⛔": {
+        "name": "Buyer Absorption",
+        "description": "Bullish candle followed by price failing to drop below its open",
+        "interpretation": "Buyers absorbing all selling pressure - potential reversal signal"
+    },
+    "🚀": {
+        "name": "Seller Absorption",
+        "description": "Bearish candle followed by price failing to rise above its open",
+        "interpretation": "Sellers absorbing all buying pressure - potential reversal signal"
+    },
+    "💥": {
+        "name": "Bullish Pivot Point Breakout",
+        "description": "Price breaks above recent high with strong volume",
+        "interpretation": "Potential start of new uptrend or breakout continuation"
+    },
+    "💣": {
+        "name": "Bearish Pivot Point Breakdown",
+        "description": "Price breaks below recent low with strong volume",
+        "interpretation": "Potential start of new downtrend or breakdown continuation"
+    },
+    "🐂": {
+        "name": "Bullish Point of Interest",
+        "description": "Large bullish candle occupying >70% of range with high volume",
+        "interpretation": "Strong buying interest at this price level"
+    },
+    "🐻": {
+        "name": "Bearish Point of Interest",
+        "description": "Large bearish candle occupying >70% of range with high volume",
+        "interpretation": "Strong selling interest at this price level"
+    }
+}
+
+# Add this section near the top of your code, after imports but before main logic
+def show_help_section():
+    """Displays the comprehensive help documentation in an expandable section"""
+    with st.expander("📚 Quantexo Help Documentation", expanded=False):
+        st.markdown("""
+        ## 📊 Signal Reference Guide
+        """)
+        
+        # Display signal documentation in a clean table format
+        cols = st.columns([0.5, 1, 2, 2])
+        with cols[0]: st.markdown("**Symbol**")
+        with cols[1]: st.markdown("**Name**")
+        with cols[2]: st.markdown("**Description**")
+        with cols[3]: st.markdown("**Interpretation**")
+        
+        for symbol, info in SIGNAL_DOCS.items():
+            cols = st.columns([0.5, 1, 2, 2])
+            with cols[0]: st.markdown(f"<h3>{symbol}</h3>", unsafe_allow_html=True)
+            with cols[1]: st.markdown(info["name"])
+            with cols[2]: st.markdown(info["description"])
+            with cols[3]: st.markdown(info["interpretation"])
+            st.divider()
+        
+        st.markdown("""
+        ---
+        ## 🖥️ How to Use
+        
+        ### Basic Usage:
+        1. **Select Sector** from dropdown (optional)
+        2. **Choose Company** or enter symbol manually
+        3. **View** automatically detected signals
+        4. **Hover** over signals for detailed information
+        
+        ### Advanced Features:
+        - **Scan All**: Analyze all companies at once
+        - **Download**: Export results as CSV
+        - **Interactive Chart**: Zoom/pan with mouse
+        
+        ---
+        ## 🔢 Technical Indicators Used
+        
+        - **Volume Analysis**: 2x average volume threshold
+        - **Price Action**: Candle body >70% of range
+        - **Breakouts**: New 10-day high/low
+        - **Absorption**: Follow-through price action
+        
+        ---
+        ## 📈 Data Information
+        
+        **Source**: 
+        - NEPSE market data via Google Sheets API
+        
+        **Update Frequency**: 
+        - End-of-day (EOD) updates by 8:00 PM NPT
+        
+        **Data Fields**:
+        - Date, Open, High, Low, Close, Volume
+        
+        **Note**: 
+        - Data is cached for 1 hour (refresh to update)
+        - Historical data available for 1 year
+        
+        ---
+        ## ⚠️ Risk Disclaimer
+        
+        This tool provides technical analysis only. 
+        - Not financial advice
+        - Past performance ≠ future results
+        - Always do your own research
+        - Invest at your own risk
+        """)
+if st.sidebar.button("📚 Open Help Documentation"):
+    show_help_section()
 
 # --- SECTOR TO COMPANY MAPPING ---
 sector_to_companies = {
@@ -379,6 +496,7 @@ if company_symbol:
                     f"{tag_labels.get(tag, tag)}<extra></extra>"
                 )
             ))
+        
         # Calculate 15 days ahead of the last date
         last_date = df['date'].max()
         extended_date = last_date + timedelta(days=15)
@@ -440,7 +558,17 @@ if company_symbol:
             - 🐂 Bullish POI
             - 🐻 Bearish POI
             """)
+        with st.expander("ℹ️ About Data Source"):
+            st.markdown("""
+            **Data Source Information:**
 
+            - **Source**: NEPSE market data via Google Sheets
+            - **Update Frequency**: End-of-day (EOD) data updated daily by 8:00 PM NPT
+            - **History**: Contains up to 1 year of historical data
+            - **Fields**: Open, High, Low, Close, Volume for all listed companies
+
+            **Note**: This is unofficial data. For official data, please refer to [NEPSE](https://www.nepalstock.com.np/).
+            """)
     except Exception as e:
         st.error(f"⚠️ Processing error: {str(e)}")
 else:
