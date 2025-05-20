@@ -212,6 +212,10 @@ if scan_all_clicked:
     progress = st.progress(0, text="🔍 Scanning...")
 
     for i, symbol in enumerate(all_companies):
+        progress= (i+1) / len(all_companies)
+        progress_bar.progress(progress)
+        status_text.text(f"🔍 Scanning {symbol} ({i+1}/{len(all_companies)})")
+
         df = get_sheet_data(symbol, sheet_name)
         if df.empty:
             continue
@@ -240,9 +244,9 @@ if scan_all_clicked:
         except Exception as e:
             st.warning(f"⚠️ Error processing {symbol}: {str(e)}")
 
-        progress.progress((i + 1) / len(all_companies), text=f"Scanning {symbol}...")
-
-    progress.empty()
+    loading_container.empty()
+    progress_bar.empty()
+    status_text.empty()
 
     if all_results:
         result_df = pd.DataFrame(all_results)
