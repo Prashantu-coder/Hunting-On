@@ -353,7 +353,7 @@ if company_symbol:
         for tag in signals['tag'].unique():
             subset = signals[signals['tag'] == tag]
             fig.add_trace(go.Scatter(
-                x=subset['date'], y=subset['close'],
+                x=subset['date'], y=subset['close']*0.98,
                 mode='markers+text',
                 name=tag_labels.get(tag, tag),
                 text=[tag] * len(subset),
